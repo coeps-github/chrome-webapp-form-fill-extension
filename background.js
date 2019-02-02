@@ -14,19 +14,24 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
             }, () => sendResponse());
         });
     }
-    if (request.getAiEnabled) {
+    if (request.getSelectEnabled) {
         chrome.storage.sync.get('config', data => {
-            sendResponse(!!(data.config && data.config.aiEnabled));
+            sendResponse(!!(data.config && data.config.selectEnabled));
         });
     }
-    if (request.setAiEnabled) {
+    if (request.setSelectEnabled) {
         chrome.storage.sync.get('config', data => {
             chrome.storage.sync.set({
                 config: {
                     ...(data.config ? data.config : {}),
-                    aiEnabled: request.setAiEnabled.value
+                    selectEnabled: request.setSelectEnabled.value
                 }
             }, () => sendResponse());
+        });
+    }
+    if (request.getPopup) {
+        chrome.storage.sync.get('config', data => {
+            sendResponse((data.config && data.config.popup) || {});
         });
     }
     if (request.setPopup) {
@@ -76,12 +81,19 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.getUrl) {
         getUrl(url => sendResponse(url));
     }
-    if (request.executeScript) {
-        executeScript(request.executeScript.value, (id, url, result) => sendResponse({
-            id: id,
-            url: url,
-            result: result
-        }))
+    if (request.markElements) {
+        currentTab(id => chrome.tabs.sendMessage(id, {markElementsTab: request.markElements}, () => {
+        }));
+        sendResponse();
+    }
+    if (request.fillElements) {
+        chrome.storage.sync.get('config', data => {
+            if (data.config) {
+                currentTab(id => chrome.tabs.sendMessage(id, {fillElementsTab: data.config.rules}, () => {
+                }));
+                sendResponse();
+            }
+        });
     }
     if (request.openOptionsPage) {
         chrome.runtime.openOptionsPage();
@@ -91,14 +103,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
 function getUrl(callback) {
     currentTab((id, url) => callback(url));
-}
-
-function executeScript(code, callback) {
-    currentTab((id, url) => chrome.tabs.executeScript(id, {code: code}, result => {
-        if (callback) {
-            callback(id, url, result);
-        }
-    }));
 }
 
 function currentTab(action) {

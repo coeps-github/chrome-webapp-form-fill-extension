@@ -4,12 +4,12 @@ const property = document.getElementById('property');
 const selector = document.getElementById('selector');
 const index = document.getElementById('index');
 const page = document.getElementById('page');
-const ai = document.getElementById('ai');
+const select = document.getElementById('select');
 const save = document.getElementById('save');
 const options = document.getElementById('options');
 
 chrome.runtime.sendMessage({getConfig: {}}, config => {
-    colorizeAiButton(config.aiEnabled);
+    colorizeSelectButton(config.selectEnabled);
 
     if (config.popup) {
         console.log(config.popup);
@@ -27,7 +27,7 @@ fill.onclick = () => {
         chrome.runtime.sendMessage({getRules: {}}, rules =>
             rules.forEach(rule => {
                 if (!rule.page || (rule.page && rule.page === url)) {
-                    chrome.runtime.sendMessage({executeScript: {value: fillElements(rule.value, rule.property, rule.selector, rule.index)}}, () => {
+                    chrome.runtime.sendMessage({fillElements: {}}, () => {
                         fill.innerHTML = '&#10004;';
                         setTimeout(() => {
                             fill.innerText = 'fill';
@@ -50,22 +50,22 @@ property.oninput = () => {
 
 selector.oninput = () => {
     saveInputState();
-    chrome.runtime.sendMessage({executeScript: {value: markElements(selector.value, index.value)}});
+    chrome.runtime.sendMessage({markElements: {selector: selector.value, index: index.value}});
 };
 
 index.oninput = () => {
     saveInputState();
-    chrome.runtime.sendMessage({executeScript: {value: markElements(selector.value, index.value)}});
+    chrome.runtime.sendMessage({markElements: {selector: selector.value, index: index.value}});
 };
 
 page.onchange = () => {
     saveInputState();
 };
 
-ai.onclick = () => {
-    chrome.runtime.sendMessage({getAiEnabled: {}}, aiEnabled =>
-        chrome.runtime.sendMessage({setAiEnabled: {value: !aiEnabled}}, () => {
-            colorizeAiButton(!aiEnabled);
+select.onclick = () => {
+    chrome.runtime.sendMessage({getSelectEnabled: {}}, selectEnabled =>
+        chrome.runtime.sendMessage({setSelectEnabled: {value: !selectEnabled}}, () => {
+            colorizeSelectButton(!selectEnabled);
         })
     );
 };
@@ -74,23 +74,23 @@ save.onclick = () => {
     save.disabled = true;
     chrome.runtime.sendMessage({getUrl: {}}, url =>
         chrome.runtime.sendMessage({
-            addRule: {
-                value: {
-                    value: value.value,
-                    property: property.value,
-                    selector: selector.value,
-                    index: index.value,
-                    page: page.checked ? url : '',
+                addRule: {
+                    value: {
+                        value: value.value,
+                        property: property.value,
+                        selector: selector.value,
+                        index: index.value,
+                        page: page.checked ? url : '',
+                    }
                 }
-            }
-        }, () =>
-            chrome.runtime.sendMessage({update: {}}, () => {
-                save.innerHTML = '&#10004;';
-                setTimeout(() => {
-                    save.innerText = 'save';
-                    save.disabled = false;
-                }, 500);
-            })
+            }, () =>
+                chrome.runtime.sendMessage({update: {}}, () => {
+                    save.innerHTML = '&#10004;';
+                    setTimeout(() => {
+                        save.innerText = 'save';
+                        save.disabled = false;
+                    }, 500);
+                })
         )
     );
 };
@@ -110,47 +110,14 @@ function saveInputState() {
                 page: page.checked
             }
         }
+    }, () => {
     })
 }
 
-function colorizeAiButton(aiEnabled) {
-    if (aiEnabled) {
-        document.getElementById('ai').style.backgroundColor = 'lightgreen';
+function colorizeSelectButton(selectEnabled) {
+    if (selectEnabled) {
+        document.getElementById('select').style.backgroundColor = 'lightgreen';
     } else {
-        document.getElementById('ai').style.backgroundColor = null;
+        document.getElementById('select').style.backgroundColor = null;
     }
-}
-
-function markElements(selector, index) {
-    return '{' +
-        'const markedElements = document.querySelectorAll(\'.mark\');' +
-        'markedElements.forEach(element => element.classList.remove(\'mark\'));' +
-        'const elements = document.querySelectorAll(\'' + selector + '\');' +
-        'elements.forEach((element, i) => {' +
-        (
-            index ?
-                'if (i === ' + index + ') {' +
-                'element.classList.add(\'mark\');' +
-                '}' :
-                'element.classList.add(\'mark\');'
-        ) +
-        '});' +
-        '}';
-}
-
-function fillElements(value, property, selector, index) {
-    let val = value !== 'true' && value !== 'false' && isNaN(value) ? '\'' + value + '\'' : value;
-    return '{' +
-        'const elements = document.querySelectorAll(\'' + selector + '\');' +
-        'elements.forEach((element, i) => {' +
-        (
-            index ?
-                'if (i === ' + index + ') {' +
-                'element.' + property + ' = ' + val + ';' +
-                '}' :
-                'element.' + property + ' = ' + val + ';'
-        ) +
-        'element.dispatchEvent(new Event(\'input\'));' +
-        '});' +
-        '}';
 }
