@@ -12,7 +12,6 @@ chrome.runtime.sendMessage({getConfig: {}}, config => {
     colorizeSelectButton(config.selectEnabled);
 
     if (config.popup) {
-        console.log(config.popup);
         value.value = config.popup.value;
         property.value = config.popup.property;
         selector.value = config.popup.selector;

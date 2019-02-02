@@ -65,9 +65,10 @@ clear.onclick = () => {
     });
 };
 
-chrome.runtime.onMessage.addListener(request => {
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.update) {
         createConfigEntries();
+        sendResponse();
     }
     return true;
 });

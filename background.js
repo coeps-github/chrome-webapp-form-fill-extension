@@ -1,6 +1,3 @@
-chrome.runtime.onInstalled.addListener(() => {
-});
-
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.getConfig) {
         chrome.storage.sync.get('config', data => {

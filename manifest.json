@@ -1,11 +1,18 @@
 {
   "name": "WebApp Form Filler",
+  "short_name": "WAFF",
   "version": "0.0.1",
-  "description": "Automatically fill forms in your web applications. Especially handy for manual testing and development.",
+  "description": "Automatically fills forms in your web applications. Especially handy for manual testing and development.",
   "manifest_version": 2,
   "permissions": ["activeTab","storage"],
   "browser_action": {
-    "default_popup": "popup.html"
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "images/icon16.png",
+      "32": "images/icon32.png",
+      "48": "images/icon48.png",
+      "128": "images/icon128.png"
+    }
   },
   "options_page": "options.html",
   "background": {
@@ -16,5 +23,11 @@
     "matches": ["*://*/*"],
     "css": ["marker.css"],
     "js": ["content.js"]
-  }]
+  }],
+  "icons": {
+    "16": "images/icon16.png",
+    "32": "images/icon32.png",
+    "48": "images/icon48.png",
+    "128": "images/icon128.png"
+  }
 }
