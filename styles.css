@@ -1,0 +1,162 @@
+.container {
+    background-color: #1e2833;
+    color: #fff;
+    overflow: hidden;
+}
+
+.container--full-height {
+    height: 100%;
+}
+
+.container--overflow {
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
+.flex {
+    display: flex;
+}
+
+.flex-center {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.content-padding {
+    padding: 20px;
+}
+
+.content-padding-lr {
+    padding: 0 20px;
+}
+
+.space-top-big {
+    margin-top: 20px;
+}
+
+.space-bottom {
+    margin-bottom: 10px;
+}
+
+.space-bottom-big {
+    margin-bottom: 20px;
+}
+
+.space-bottom-bigger {
+    margin-bottom: 40px;
+}
+
+.space-right {
+    margin-right: 10px;
+}
+
+.space-right-button {
+    margin-right: 14px;
+}
+
+.input {
+    height: 30px;
+    width: 180px;
+    background: none;
+    border: none;
+    border-bottom: 1px solid #fff;
+    border-radius: 0;
+    box-shadow: none;
+    outline: none;
+    color: inherit;
+}
+
+.input--short {
+    width: 120px;
+}
+
+.input--shorter {
+    width: 80px;
+}
+
+.input--long {
+    width: 280px;
+}
+
+.button {
+    height: 37px;
+    background: #214a80;
+    border: none;
+    border-radius: 4px;
+    padding: 11px;
+    box-shadow: none;
+    text-shadow: none;
+    outline: none;
+    color: inherit;
+}
+
+.checkbox {
+    position: absolute;
+    z-index: -1000;
+    left: -1000px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    height: 1px;
+    width: 1px;
+    margin: -1px;
+    padding: 0;
+    border: 0;
+}
+
+.checkbox + .checkbox-label {
+    padding-left: 26px;
+    height: 21px;
+    display: inline-block;
+    background-repeat: no-repeat;
+    background-position: 0 0;
+    vertical-align: middle;
+    cursor: pointer;
+}
+
+.checkbox:checked + .checkbox-label {
+    background-position: 0 -21px;
+}
+
+.checkbox-label {
+    background-image: url(checkbox.png);
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+.button:hover,
+.button:active {
+    background: #214a80;
+    outline: none;
+}
+
+.button:active {
+    transform: translateY(1px);
+}
+
+.button:disabled {
+    background: #505050;
+}
+
+::placeholder {
+    color: #505050;
+    opacity: 1;
+}
+
+*,
+*::before,
+*::after {
+    box-sizing: inherit;
+}
+
+html,
+body {
+    box-sizing: border-box;
+    position: relative;
+    margin: 0;
+    padding: 0;
+}
