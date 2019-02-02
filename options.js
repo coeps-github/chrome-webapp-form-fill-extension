@@ -12,7 +12,7 @@ add.onclick = () => {
         property: document.getElementById('addproperty').value,
         selector: document.getElementById('addselector').value,
         index: document.getElementById('addindex').value,
-        page: document.getElementById('addpage').value
+        url: document.getElementById('addurl').value
     }, currentIndex);
     currentIndex++;
     connectDeleteListener();
@@ -29,7 +29,7 @@ save.onclick = () => {
     const property = document.querySelectorAll('[id^=property]');
     const selector = document.querySelectorAll('[id^=selector]');
     const index = document.querySelectorAll('[id^=index]');
-    const page = document.querySelectorAll('[id^=page]');
+    const url = document.querySelectorAll('[id^=url]');
     const data = {
         setRules: {
             value: []
@@ -41,7 +41,7 @@ save.onclick = () => {
             property: property[i].value,
             selector: selector[i].value,
             index: index[i].value,
-            page: page[i].value,
+            url: url[i].value,
         });
     }
     chrome.runtime.sendMessage(data, () => {
@@ -110,7 +110,7 @@ function createConfigEntry(rule, index) {
         '            <input id="index' + index + '" class="input input--shorter" type="text" placeholder="Index e.g. 3" value="' + rule.index + '">' +
         '        </label>' +
         '        <label class="space-right">' +
-        '            <input id="page' + index + '" class="input input--long" type="text" placeholder="Page URL (leave empty to apply everywhere)" value="' + rule.page + '">' +
+        '            <input id="url' + index + '" class="input input--long" type="text" placeholder="Page URL (leave empty to apply everywhere)" value="' + rule.url + '">' +
         '        </label>' +
         '        <button id="delete' + index + '" class="button">delete</button>' +
         '    </div>' +

@@ -20,7 +20,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         chrome.storage.sync.get('config', data => {
             chrome.storage.sync.set({
                 config: {
-                    ...(data.config ? data.config : {}),
+                    ...data.config || {},
                     selectEnabled: request.setSelectEnabled.value
                 }
             }, () => sendResponse());
@@ -35,7 +35,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         chrome.storage.sync.get('config', data => {
             chrome.storage.sync.set({
                 config: {
-                    ...(data.config ? data.config : {}),
+                    ...data.config || {},
                     popup: request.setPopup.value
                 }
             }, () => sendResponse());
@@ -50,44 +50,48 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         chrome.storage.sync.get('config', data => {
             chrome.storage.sync.set({
                 config: {
-                    ...(data.config ? data.config : {}),
+                    ...data.config || {},
                     rules: request.setRules.value
                 }
             }, () => sendResponse());
         });
     }
     if (request.addRule) {
-        chrome.storage.sync.get('config', data => {
-            chrome.storage.sync.set({
-                config: {
-                    ...(data.config ? data.config : {}),
-                    rules: [
-                        ...(data.config && data.config.rules ? data.config.rules : []),
-                        {
-                            value: request.addRule.value.value,
-                            property: request.addRule.value.property,
-                            selector: request.addRule.value.selector,
-                            index: request.addRule.value.index,
-                            page: request.addRule.value.page
-                        }
-                    ]
-                }
-            }, () => sendResponse());
+        getUrl(url => {
+            chrome.storage.sync.get('config', data => {
+                chrome.storage.sync.set({
+                    config: {
+                        ...data.config || {},
+                        rules: [
+                            ...(data.config && data.config.rules) || [],
+                            {
+                                value: request.addRule.value.value,
+                                property: request.addRule.value.property,
+                                selector: request.addRule.value.selector,
+                                index: request.addRule.value.index,
+                                url: request.addRule.value.page ? url : ''
+                            }
+                        ]
+                    }
+                }, () => sendResponse());
+            });
         });
-    }
-    if (request.getUrl) {
-        getUrl(url => sendResponse(url));
     }
     if (request.markElements) {
         currentTab(id => chrome.tabs.sendMessage(id, {markElementsTab: request.markElements}));
         sendResponse();
     }
     if (request.fillElements) {
-        chrome.storage.sync.get('config', data => {
-            if (data.config) {
-                currentTab(id => chrome.tabs.sendMessage(id, {fillElementsTab: data.config.rules}));
+        getUrl(url => {
+            chrome.storage.sync.get('config', data => {
+                currentTab(id => chrome.tabs.sendMessage(id, {
+                    fillElementsTab: {
+                        rules: (data.config && data.config.rules) || [],
+                        url: url
+                    }
+                }));
                 sendResponse();
-            }
+            });
         });
     }
     if (request.openOptionsPage) {

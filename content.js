@@ -128,8 +128,10 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         sendResponse();
     }
     if (request.fillElementsTab) {
-        request.fillElementsTab.forEach(rule => {
-            fillElements(rule.value, rule.property, rule.selector, rule.index);
+        request.fillElementsTab.rules.forEach(rule => {
+            if (!rule.url || request.fillElementsTab.url === rule.url) {
+                fillElements(rule.value, rule.property, rule.selector, rule.index);
+            }
         });
         sendResponse();
     }
@@ -207,10 +209,11 @@ function markElements(selector, index) {
     if (selector) {
         const elements = document.querySelectorAll(selector);
         elements.forEach((element, i) => {
-            if (isNaN(parseInt(index))) {
+            const indexNum = parseInt(index);
+            if (isNaN(indexNum)) {
                 element.classList.add('mark');
             } else {
-                if (index === i) {
+                if (indexNum === i) {
                     element.classList.add('mark');
                 }
             }

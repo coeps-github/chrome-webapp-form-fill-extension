@@ -22,21 +22,13 @@ chrome.runtime.sendMessage({getConfig: {}}, config => {
 
 fill.onclick = () => {
     fill.disabled = true;
-    chrome.runtime.sendMessage({getUrl: {}}, url =>
-        chrome.runtime.sendMessage({getRules: {}}, rules =>
-            rules.forEach(rule => {
-                if (!rule.page || (rule.page && rule.page === url)) {
-                    chrome.runtime.sendMessage({fillElements: {}}, () => {
-                        fill.innerHTML = '&#10004;';
-                        setTimeout(() => {
-                            fill.innerText = 'fill';
-                            fill.disabled = false;
-                        }, 500);
-                    });
-                }
-            })
-        )
-    );
+    chrome.runtime.sendMessage({fillElements: {}}, () => {
+        fill.innerHTML = '&#10004;';
+        setTimeout(() => {
+            fill.innerText = 'fill';
+            fill.disabled = false;
+        }, 500);
+    });
 };
 
 value.oninput = () => {
@@ -72,26 +64,24 @@ select.onclick = () => {
 
 save.onclick = () => {
     save.disabled = true;
-    chrome.runtime.sendMessage({getUrl: {}}, url =>
-        chrome.runtime.sendMessage({
-                addRule: {
-                    value: {
-                        value: value.value,
-                        property: property.value,
-                        selector: selector.value,
-                        index: index.value,
-                        page: page.checked ? url : '',
-                    }
+    chrome.runtime.sendMessage({
+            addRule: {
+                value: {
+                    value: value.value,
+                    property: property.value,
+                    selector: selector.value,
+                    index: index.value,
+                    page: page.checked
                 }
-            }, () =>
-                chrome.runtime.sendMessage({update: {}}, () => {
-                    save.innerHTML = '&#10004;';
-                    setTimeout(() => {
-                        save.innerText = 'save';
-                        save.disabled = false;
-                    }, 500);
-                })
-        )
+            }
+        }, () =>
+            chrome.runtime.sendMessage({update: {}}, () => {
+                save.innerHTML = '&#10004;';
+                setTimeout(() => {
+                    save.innerText = 'save';
+                    save.disabled = false;
+                }, 500);
+            })
     );
 };
 
