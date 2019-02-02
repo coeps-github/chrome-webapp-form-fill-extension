@@ -1,6 +1,6 @@
 {
   "name": "WebApp Form Filler",
-  "version": "1.0",
+  "version": "0.1",
   "description": "Automatically fill forms in your web applications. Especially handy for manual testing and development.",
   "manifest_version": 2,
   "permissions": ["activeTab","storage"],
