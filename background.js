@@ -79,21 +79,23 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         getUrl(url => sendResponse(url));
     }
     if (request.markElements) {
-        currentTab(id => chrome.tabs.sendMessage(id, {markElementsTab: request.markElements}, () => {
-        }));
+        currentTab(id => chrome.tabs.sendMessage(id, {markElementsTab: request.markElements}));
         sendResponse();
     }
     if (request.fillElements) {
         chrome.storage.sync.get('config', data => {
             if (data.config) {
-                currentTab(id => chrome.tabs.sendMessage(id, {fillElementsTab: data.config.rules}, () => {
-                }));
+                currentTab(id => chrome.tabs.sendMessage(id, {fillElementsTab: data.config.rules}));
                 sendResponse();
             }
         });
     }
     if (request.openOptionsPage) {
         chrome.runtime.openOptionsPage();
+        sendResponse();
+    }
+    if (request.update) {
+        sendResponse();
     }
     return true;
 });

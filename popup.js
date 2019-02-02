@@ -65,6 +65,7 @@ select.onclick = () => {
     chrome.runtime.sendMessage({getSelectEnabled: {}}, selectEnabled =>
         chrome.runtime.sendMessage({setSelectEnabled: {value: !selectEnabled}}, () => {
             colorizeSelectButton(!selectEnabled);
+            chrome.runtime.sendMessage({markElements: {selector: selector.value, index: index.value}});
         })
     );
 };
@@ -109,7 +110,6 @@ function saveInputState() {
                 page: page.checked
             }
         }
-    }, () => {
     })
 }
 

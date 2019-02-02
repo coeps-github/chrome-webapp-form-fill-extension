@@ -8,10 +8,10 @@ document.onclick = event => {
                 const attrs = attributes(element);
                 const attrQueries = getAttributeQueries(attrs);
 
-                let value = undefined;
-                let property = undefined;
-                let selector = undefined;
-                let index = undefined;
+                let value = '';
+                let property = '';
+                let selector = '';
+                let index = '';
 
                 let bestQueryAmountSoFar = 999999;
                 let bestSelectorSoFar = undefined;
@@ -184,14 +184,13 @@ function setPopupValue(value, property, selector, index) {
         chrome.runtime.sendMessage({
             setPopup: {
                 value: {
-                    value: value || popup.value,
-                    property: property || popup.property,
-                    selector: selector || popup.selector,
-                    index: index || popup.index,
+                    value: value || popup.value || '',
+                    property: property || popup.property || '',
+                    selector: selector || popup.selector || '',
+                    index: index || popup.index || '',
                     page: true
                 }
             }
-        }, () => {
         })
     );
 }
