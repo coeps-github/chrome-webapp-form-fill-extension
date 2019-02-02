@@ -12,9 +12,12 @@ chrome.runtime.sendMessage({getConfig: {}}, config => {
     colorizeAiButton(config.aiEnabled);
 
     if (config.popup) {
+        console.log(config.popup);
+        value.value = config.popup.value;
         property.value = config.popup.property;
         selector.value = config.popup.selector;
         index.value = config.popup.index;
+        page.checked = config.popup.page;
     }
 });
 
@@ -37,16 +40,26 @@ fill.onclick = () => {
     );
 };
 
-selector.oninput = (event) => {
-    if (event.target.value) {
-        chrome.runtime.sendMessage({executeScript: {value: markElements(event.target.value, index.value)}});
-    }
+value.oninput = () => {
+    saveInputState();
 };
 
-index.oninput = (event) => {
-    if (event.target.value) {
-        chrome.runtime.sendMessage({executeScript: {value: markElements(selector.value, event.target.value)}});
-    }
+property.oninput = () => {
+    saveInputState();
+};
+
+selector.oninput = () => {
+    saveInputState();
+    chrome.runtime.sendMessage({executeScript: {value: markElements(selector.value, index.value)}});
+};
+
+index.oninput = () => {
+    saveInputState();
+    chrome.runtime.sendMessage({executeScript: {value: markElements(selector.value, index.value)}});
+};
+
+page.onchange = () => {
+    saveInputState();
 };
 
 ai.onclick = () => {
@@ -85,6 +98,20 @@ save.onclick = () => {
 options.onclick = () => {
     chrome.runtime.sendMessage({openOptionsPage: {}});
 };
+
+function saveInputState() {
+    chrome.runtime.sendMessage({
+        setPopup: {
+            value: {
+                value: value.value,
+                property: property.value,
+                selector: selector.value,
+                index: index.value,
+                page: page.checked
+            }
+        }
+    })
+}
 
 function colorizeAiButton(aiEnabled) {
     if (aiEnabled) {
