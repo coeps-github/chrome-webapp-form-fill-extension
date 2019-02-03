@@ -14,7 +14,7 @@ document.onclick = event => {
                 let index = '';
 
                 let bestQueryAmountSoFar = 999999;
-                let bestSelectorSoFar = undefined;
+                let bestSelectorSoFar = '';
 
                 // Value
                 if (tag === 'input' && type === 'checkbox') {
