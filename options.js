@@ -74,7 +74,7 @@ clear.onclick = () => {
 };
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-    if (request.update) {
+    if (request.update && request.update.value === 'options') {
         createConfigEntries();
         sendResponse();
     }

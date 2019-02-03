@@ -9,18 +9,6 @@ const select = document.getElementById('select');
 const save = document.getElementById('save');
 const options = document.getElementById('options');
 
-chrome.runtime.sendMessage({getConfig: {}}, config => {
-    colorizeSelectButton(config.selectEnabled);
-
-    if (config.popup) {
-        value.value = config.popup.value;
-        property.value = config.popup.property;
-        selector.value = config.popup.selector;
-        index.value = config.popup.index;
-        page.checked = config.popup.page;
-    }
-});
-
 fill.onclick = () => {
     fill.disabled = true;
     chrome.runtime.sendMessage({fillElements: {}}, () => {
@@ -77,7 +65,7 @@ save.onclick = () => {
                 }
             }
         }, () =>
-            chrome.runtime.sendMessage({update: {}}, () => {
+            chrome.runtime.sendMessage({update: {value: 'options'}}, () => {
                 save.innerHTML = '&#10004;';
                 setTimeout(() => {
                     save.innerText = 'save';
@@ -90,6 +78,30 @@ save.onclick = () => {
 options.onclick = () => {
     chrome.runtime.sendMessage({openOptionsPage: {}});
 };
+
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    if (request.update && request.update.value === 'popup') {
+        value.value = request.update.popup.value;
+        property.value = request.update.popup.property;
+        selector.value = request.update.popup.selector;
+        index.value = request.update.popup.index;
+        page.checked = request.update.popup.page;
+        sendResponse();
+    }
+    return true;
+});
+
+chrome.runtime.sendMessage({getConfig: {}}, config => {
+    colorizeSelectButton(config.selectEnabled);
+
+    if (config.popup) {
+        value.value = config.popup.value;
+        property.value = config.popup.property;
+        selector.value = config.popup.selector;
+        index.value = config.popup.index;
+        page.checked = config.popup.page;
+    }
+});
 
 function saveInputState(callback) {
     chrome.runtime.sendMessage({
