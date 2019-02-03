@@ -6,8 +6,8 @@
 <body class="container--full-height">
 <div class="container container--full-height container--overflow">
     <form id="addForm" autocomplete="on" class="content-padding-lr space-bottom-bigger space-top-big">
-        <div class="flex-center">
-            <div>
+        <div class="flex flex--center">
+            <div class="inline-flex flex--center flex--wrap">
                 <label class="space-right">
                     <input id="addvalue" class="input" type="text" placeholder="Value e.g. Test" autocomplete="value">
                 </label>
@@ -34,14 +34,14 @@
     <form id="form" autocomplete="on">
         <div id="config" class="content-padding-lr"></div>
         <div class="content-padding-lr space-bottom-bigger">
-            <div class="flex-center space-bottom-big">
+            <div class="flex flex--center space-bottom-big">
                 <button id="save" type="submit" class="button space-right">save</button>
                 <button id="clear" type="reset" class="button">clear</button>
             </div>
-            <div class="flex-center space-bottom-big">
+            <div class="flex flex--center space-bottom-big">
                 <a id="export" type="submit" href="" download="waff-export.json" class="button">export</a>
             </div>
-            <div class="flex-center">
+            <div class="flex flex--center">
                 <label>
                     <input id="import" type="file">
                     <span id="import-result"></span>

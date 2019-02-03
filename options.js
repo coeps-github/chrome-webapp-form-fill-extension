@@ -163,11 +163,27 @@ function connectActionListeners() {
             del.onclick = () =>
                 config.removeChild(document.getElementById(del.parentElement.parentElement.id))
         );
+    document.querySelectorAll('[id^=up]')
+        .forEach(up =>
+            up.onclick = () => {
+                const me = document.getElementById(up.parentElement.parentElement.parentElement.id);
+                const myIndex = getElementIndex(me);
+                moveChildToIndex(config, me, myIndex - 1);
+            }
+        );
+    document.querySelectorAll('[id^=down]')
+        .forEach(down =>
+            down.onclick = () => {
+                const me = document.getElementById(down.parentElement.parentElement.parentElement.id);
+                const myIndex = getElementIndex(me);
+                moveChildToIndex(config, me, myIndex + 1);
+            }
+        );
 }
 
 function createConfigEntry(rule, index) {
-    return '<div id="entry' + index + '" class="flex-center">' +
-        '    <div class="space-bottom-bigger">' +
+    return '<div id="entry' + index + '" class="flex flex--center">' +
+        '    <div class="inline-flex flex--center flex--wrap space-bottom-bigger">' +
         '        <label class="space-right">' +
         '            <input id="value' + index + '" class="input" type="text" placeholder="Value e.g. Test" value="' + rule.value + '"  ' + (rule.click ? 'disabled' : '') + ' autocomplete="value">' +
         '        </label>' +
@@ -185,7 +201,11 @@ function createConfigEntry(rule, index) {
         '        <label class="space-right">' +
         '            <input id="url' + index + '" class="input input--long" type="text" placeholder="Page URL (leave empty to apply everywhere)" value="' + rule.url + '" autocomplete="url">' +
         '        </label>' +
-        '        <button id="delete' + index + '" type="button" class="button">delete</button>' +
+        '        <button id="delete' + index + '" type="button" class="button space-right">delete</button>' +
+        '        <div class="inline-flex flex--column">' +
+        '            <button id="up' + index + '" type="button" class="button button--small space-bottom-ultra-small">&#9651;</button>' +
+        '            <button id="down' + index + '" type="button" class="button button--small">&#9661;</button>' +
+        '        </div>' +
         '    </div>' +
         '</div>';
 }
@@ -197,4 +217,23 @@ function disableAddValueAndPropertyField(clickEnabled) {
 
 function disableValueAndPropertyField(element, clickEnabled) {
     element.disabled = clickEnabled;
+}
+
+function getElementIndex(element) {
+    let index = 0;
+    while ((element = element.previousElementSibling)) {
+        index++;
+    }
+    return index;
+}
+
+function moveChildToIndex(parent, child, index) {
+    parent.removeChild(child);
+    if (index < 0) {
+        parent.appendChild(child);
+    }
+    if (index > parent.children.length) {
+        index = 0;
+    }
+    parent.insertBefore(child, parent.children[index]);
 }

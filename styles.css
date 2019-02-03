@@ -17,10 +17,21 @@
     display: flex;
 }
 
-.flex-center {
-    display: flex;
+.inline-flex {
+    display: inline-flex;
+}
+
+.flex--center {
     justify-content: center;
     align-items: center;
+}
+
+.flex--wrap {
+    flex-wrap: wrap;
+}
+
+.flex--column {
+    flex-direction: column;
 }
 
 .content-padding {
@@ -33,6 +44,10 @@
 
 .space-top-big {
     margin-top: 20px;
+}
+
+.space-bottom-ultra-small {
+    margin-bottom: 1px;
 }
 
 .space-bottom {
@@ -52,7 +67,7 @@
 }
 
 .space-right-button {
-    margin-right: 14px;
+    margin-right: 42px;
 }
 
 .input {
@@ -102,6 +117,26 @@
     text-decoration: none;
 }
 
+.button--small {
+    height: 18px;
+    width: 18px;
+    padding: 2px;
+}
+
+.button:hover,
+.button:active {
+    background: #214a80;
+    outline: none;
+}
+
+.button:active {
+    transform: translateY(1px);
+}
+
+.button:disabled {
+    background: #505050;
+}
+
 .checkbox {
     position: absolute;
     z-index: -1000;
@@ -137,20 +172,6 @@
     -moz-user-select: none;
     -ms-user-select: none;
     user-select: none;
-}
-
-.button:hover,
-.button:active {
-    background: #214a80;
-    outline: none;
-}
-
-.button:active {
-    transform: translateY(1px);
-}
-
-.button:disabled {
-    background: #505050;
 }
 
 ::placeholder {
