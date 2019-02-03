@@ -10,6 +10,9 @@ const addUrl = document.getElementById('addurl');
 const add = document.getElementById('add');
 const save = document.getElementById('save');
 const clear = document.getElementById('clear');
+const exp = document.getElementById('export');
+const imp = document.getElementById('import');
+const importResult = document.getElementById('import-result');
 
 let currentIndex = 0;
 
@@ -84,6 +87,43 @@ clear.onclick = () => {
             clear.disabled = false;
         }, 500);
     });
+};
+
+exp.onclick = event => {
+    event.preventDefault();
+    chrome.runtime.sendMessage({getRules: {}}, rules => {
+        const href = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(rules));
+        exp.setAttribute('href', href);
+        exp.onclick = null;
+        exp.click();
+    });
+};
+
+imp.onchange = event => {
+    const files = event.target.files;
+    const reader = new FileReader();
+    const errorHandler = () => importResult.innerHTML = '&#10006;';
+    reader.onload = () => {
+        try {
+            const text = reader.result;
+            const rules = JSON.parse(text);
+            chrome.runtime.sendMessage({
+                setRules: {
+                    value: rules
+                }
+            }, () => {
+                createConfigEntries();
+                importResult.innerHTML = '&#10004;';
+            });
+        } catch {
+            errorHandler();
+        }
+    };
+    reader.onabort = errorHandler;
+    reader.onerror = errorHandler;
+    if (files.length > 0) {
+        reader.readAsText(files[0]);
+    }
 };
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
