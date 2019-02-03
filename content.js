@@ -124,12 +124,12 @@ document.onmouseover = event => {
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.markElementsTab) {
-        markElements(request.markElementsTab.selector, request.markElementsTab.index);
+        markElements(request.markElementsTab.value.selector, request.markElementsTab.value.index);
         sendResponse();
     }
     if (request.fillElementsTab) {
-        request.fillElementsTab.rules.forEach(rule => {
-            if (!rule.url || request.fillElementsTab.url === rule.url) {
+        request.fillElementsTab.value.rules.forEach(rule => {
+            if (!rule.url || request.fillElementsTab.value.url === rule.url) {
                 fillElements(rule.value, rule.property, rule.selector, rule.index);
             }
         });
@@ -225,10 +225,11 @@ function fillElements(value, property, selector, index) {
     if (property && selector) {
         const elements = document.querySelectorAll(selector);
         elements.forEach((element, i) => {
-            if (isNaN(parseInt(index))) {
+            const indexNum = parseInt(index);
+            if (isNaN(indexNum)) {
                 element[property] = value;
             } else {
-                if (index === i) {
+                if (indexNum === i) {
                     element[property] = value;
                 }
             }

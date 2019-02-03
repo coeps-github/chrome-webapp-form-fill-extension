@@ -4,28 +4,28 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-<div class="container content-padding">
+<form id="form" autocomplete="on" class="container content-padding">
     <div class="flex-center space-bottom-bigger">
-        <button id="fill" class="button">f i l l</button>
+        <button id="fill" type="button" class="button">f i l l</button>
     </div>
     <div class="space-bottom">
         <label>
-            <input id="value" class="input" type="text" placeholder="Value e.g. Test">
+            <input id="value" class="input" type="text" placeholder="Value e.g. Test" autocomplete="value">
         </label>
     </div>
     <div class="space-bottom">
         <label>
-            <input id="property" class="input" type="text" placeholder="Property e.g. value">
+            <input id="property" class="input" type="text" placeholder="Property e.g. value" autocomplete="property" required>
         </label>
     </div>
     <div class="space-bottom">
         <label>
-            <input id="selector" class="input" type="text" placeholder="Selector e.g. input[type=text]">
+            <input id="selector" class="input" type="text" placeholder="Selector e.g. input[type=text]" autocomplete="selector" required>
         </label>
     </div>
     <div class="space-bottom-big">
         <label>
-            <input id="index" class="input" type="text" placeholder="Index e.g. 3">
+            <input id="index" class="input" type="text" placeholder="Index e.g. 3" autocomplete="index">
         </label>
     </div>
     <div class="flex space-bottom-big">
@@ -33,13 +33,13 @@
         <label for="page" class="checkbox-label">only on this page</label>
     </div>
     <div class="flex-center space-bottom-bigger">
-        <button id="select" class="button space-right">select</button>
-        <button id="save" class="button">save</button>
+        <button id="select" type="button" class="button space-right">select</button>
+        <button id="save" type="submit" class="button">save</button>
     </div>
     <div class="flex-center">
-        <button id="options" class="button">options</button>
+        <button id="options" type="button" class="button">options</button>
     </div>
-</div>
+</form>
 <script src="popup.js"></script>
 </body>
 </html>

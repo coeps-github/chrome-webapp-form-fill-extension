@@ -5,37 +5,41 @@
 </head>
 <body class="container--full-height">
 <div class="container container--full-height container--overflow">
-    <div id="config" class="content-padding-lr space-top-big"></div>
-    <div class="content-padding-lr space-bottom-bigger">
+    <form id="addForm" autocomplete="on" class="content-padding-lr space-bottom-bigger space-top-big">
         <div class="flex-center">
             <div>
                 <label class="space-right">
-                    <input id="addvalue" class="input" type="text" placeholder="Value e.g. Test">
+                    <input id="addvalue" class="input" type="text" placeholder="Value e.g. Test" autocomplete="value">
                 </label>
                 <label class="space-right">
-                    <input id="addproperty" class="input input--short" type="text" placeholder="Property e.g. value">
+                    <input id="addproperty" class="input input--short" type="text" placeholder="Property e.g. value" autocomplete="property"
+                           required>
                 </label>
                 <label class="space-right">
-                    <input id="addselector" class="input" type="text" placeholder="Selector e.g. input[type=text]">
+                    <input id="addselector" class="input" type="text" placeholder="Selector e.g. input[type=text]" autocomplete="selector"
+                           required>
                 </label>
                 <label class="space-right">
-                    <input id="addindex" class="input input--shorter" type="text" placeholder="Index e.g. 3">
+                    <input id="addindex" class="input input--shorter" type="text" placeholder="Index e.g. 3" autocomplete="index">
                 </label>
                 <label class="space-right">
-                    <input id="addurl" class="input input--long" type="text" placeholder="Page URL (leave empty to apply everywhere)">
+                    <input id="addurl" class="input input--long" type="text" placeholder="Page URL (leave empty to apply everywhere)" autocomplete="url">
                 </label>
-                <button id="add" class="button space-right-button">add</button>
+                <button id="add" type="submit" class="button space-right-button">add</button>
             </div>
         </div>
-    </div>
-    <div class="content-padding-lr space-bottom-bigger">
-        <div class="flex-center space-bottom-big">
-            <button id="save" class="button">save</button>
+    </form>
+    <form id="form" autocomplete="on">
+        <div id="config" class="content-padding-lr"></div>
+        <div class="content-padding-lr space-bottom-bigger">
+            <div class="flex-center space-bottom-big">
+                <button id="save" type="submit" class="button">save</button>
+            </div>
+            <div class="flex-center">
+                <button id="clear" type="reset" class="button">clear</button>
+            </div>
         </div>
-        <div class="flex-center">
-            <button id="clear" class="button">clear</button>
-        </div>
-    </div>
+    </form>
 </div>
 <script src="options.js"></script>
 </body>

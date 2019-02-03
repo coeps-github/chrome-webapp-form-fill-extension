@@ -67,6 +67,10 @@
     color: inherit;
 }
 
+.input:focus:invalid {
+    border-color: red;
+}
+
 .input--short {
     width: 120px;
 }

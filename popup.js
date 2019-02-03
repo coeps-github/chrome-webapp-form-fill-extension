@@ -1,3 +1,4 @@
+const form = document.getElementById('form');
 const fill = document.getElementById('fill');
 const value = document.getElementById('value');
 const property = document.getElementById('property');
@@ -40,13 +41,11 @@ property.oninput = () => {
 };
 
 selector.oninput = () => {
-    saveInputState();
-    chrome.runtime.sendMessage({markElements: {selector: selector.value, index: index.value}});
+    saveInputState(() => chrome.runtime.sendMessage({markElements: {}}));
 };
 
 index.oninput = () => {
-    saveInputState();
-    chrome.runtime.sendMessage({markElements: {selector: selector.value, index: index.value}});
+    saveInputState(() => chrome.runtime.sendMessage({markElements: {}}));
 };
 
 page.onchange = () => {
@@ -57,12 +56,15 @@ select.onclick = () => {
     chrome.runtime.sendMessage({getSelectEnabled: {}}, selectEnabled =>
         chrome.runtime.sendMessage({setSelectEnabled: {value: !selectEnabled}}, () => {
             colorizeSelectButton(!selectEnabled);
-            chrome.runtime.sendMessage({markElements: {selector: selector.value, index: index.value}});
+            chrome.runtime.sendMessage({markElements: {}});
         })
     );
 };
 
 save.onclick = () => {
+    if (!form.checkValidity()) {
+        return;
+    }
     save.disabled = true;
     chrome.runtime.sendMessage({
             addRule: {
@@ -89,7 +91,7 @@ options.onclick = () => {
     chrome.runtime.sendMessage({openOptionsPage: {}});
 };
 
-function saveInputState() {
+function saveInputState(callback) {
     chrome.runtime.sendMessage({
         setPopup: {
             value: {
@@ -99,6 +101,10 @@ function saveInputState() {
                 index: index.value,
                 page: page.checked
             }
+        }
+    }, () => {
+        if (callback) {
+            callback();
         }
     })
 }

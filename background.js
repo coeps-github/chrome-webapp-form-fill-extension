@@ -78,16 +78,27 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         });
     }
     if (request.markElements) {
-        currentTab(id => chrome.tabs.sendMessage(id, {markElementsTab: request.markElements}));
-        sendResponse();
+        chrome.storage.sync.get('config', data => {
+            currentTab(id => chrome.tabs.sendMessage(id, {
+                markElementsTab: {
+                    value: {
+                        selector: (data.config && data.config.popup && data.config.popup.selector) || '',
+                        index: (data.config && data.config.popup && data.config.popup.index) || ''
+                    }
+                }
+            }));
+            sendResponse();
+        });
     }
     if (request.fillElements) {
         getUrl(url => {
             chrome.storage.sync.get('config', data => {
                 currentTab(id => chrome.tabs.sendMessage(id, {
                     fillElementsTab: {
-                        rules: (data.config && data.config.rules) || [],
-                        url: url
+                        value: {
+                            rules: (data.config && data.config.rules) || [],
+                            url: url
+                        }
                     }
                 }));
                 sendResponse();

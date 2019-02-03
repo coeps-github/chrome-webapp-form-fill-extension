@@ -1,4 +1,6 @@
+const form = document.getElementById('form');
 const config = document.getElementById('config');
+const addForm = document.getElementById('addForm');
 const add = document.getElementById('add');
 const save = document.getElementById('save');
 const clear = document.getElementById('clear');
@@ -6,6 +8,9 @@ const clear = document.getElementById('clear');
 let currentIndex = 0;
 
 add.onclick = () => {
+    if (!addForm.checkValidity()) {
+        return;
+    }
     add.disabled = true;
     config.innerHTML = config.innerHTML + createConfigEntry({
         value: document.getElementById('addvalue').value,
@@ -24,6 +29,9 @@ add.onclick = () => {
 };
 
 save.onclick = () => {
+    if (!form.checkValidity()) {
+        return;
+    }
     save.disabled = true;
     const value = document.querySelectorAll('[id^=value]');
     const property = document.querySelectorAll('[id^=property]');
@@ -98,21 +106,21 @@ function createConfigEntry(rule, index) {
     return '<div id="entry' + index + '" class="flex-center">' +
         '    <div class="space-bottom-bigger">' +
         '        <label class="space-right">' +
-        '            <input id="value' + index + '" class="input" type="text" placeholder="Value e.g. Test" value="' + rule.value + '">' +
+        '            <input id="value' + index + '" class="input" type="text" placeholder="Value e.g. Test" value="' + rule.value + '" autocomplete="value">' +
         '        </label>' +
         '        <label class="space-right">' +
-        '            <input id="property' + index + '" class="input input--short" type="text" placeholder="Property e.g. value" value="' + rule.property + '">' +
+        '            <input id="property' + index + '" class="input input--short" type="text" placeholder="Property e.g. value" value="' + rule.property + '" autocomplete="property" required>' +
         '        </label>' +
         '        <label class="space-right">' +
-        '            <input id="selector' + index + '" class="input" type="text" placeholder="Selector e.g. input[type=text]" value="' + rule.selector + '">' +
+        '            <input id="selector' + index + '" class="input" type="text" placeholder="Selector e.g. input[type=text]" value="' + rule.selector + '" autocomplete="selector" required>' +
         '        </label>' +
         '        <label class="space-right">' +
-        '            <input id="index' + index + '" class="input input--shorter" type="text" placeholder="Index e.g. 3" value="' + rule.index + '">' +
+        '            <input id="index' + index + '" class="input input--shorter" type="text" placeholder="Index e.g. 3" value="' + rule.index + '" autocomplete="index">' +
         '        </label>' +
         '        <label class="space-right">' +
-        '            <input id="url' + index + '" class="input input--long" type="text" placeholder="Page URL (leave empty to apply everywhere)" value="' + rule.url + '">' +
+        '            <input id="url' + index + '" class="input input--long" type="text" placeholder="Page URL (leave empty to apply everywhere)" value="' + rule.url + '" autocomplete="url">' +
         '        </label>' +
-        '        <button id="delete' + index + '" class="button">delete</button>' +
+        '        <button id="delete' + index + '" type="button" class="button">delete</button>' +
         '    </div>' +
         '</div>';
 }
