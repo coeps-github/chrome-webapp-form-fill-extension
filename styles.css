@@ -67,6 +67,11 @@
     color: inherit;
 }
 
+.input:disabled {
+    color: #505050;
+    border-color: #505050;
+}
+
 .input:focus:invalid {
     border-color: red;
 }

@@ -2,6 +2,7 @@ const form = document.getElementById('form');
 const fill = document.getElementById('fill');
 const value = document.getElementById('value');
 const property = document.getElementById('property');
+const click = document.getElementById('click');
 const selector = document.getElementById('selector');
 const index = document.getElementById('index');
 const page = document.getElementById('page');
@@ -25,6 +26,11 @@ value.oninput = () => {
 };
 
 property.oninput = () => {
+    saveInputState();
+};
+
+click.onchange = () => {
+    disableValueAndPropertyField(click.checked);
     saveInputState();
 };
 
@@ -59,6 +65,7 @@ save.onclick = () => {
                 value: {
                     value: value.value,
                     property: property.value,
+                    click: click.checked,
                     selector: selector.value,
                     index: index.value,
                     page: page.checked
@@ -83,9 +90,11 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.update && request.update.value === 'popup') {
         value.value = request.update.popup.value;
         property.value = request.update.popup.property;
+        click.checked = request.update.popup.click;
         selector.value = request.update.popup.selector;
         index.value = request.update.popup.index;
         page.checked = request.update.popup.page;
+        disableValueAndPropertyField(click.checked);
         sendResponse();
     }
     return true;
@@ -97,9 +106,11 @@ chrome.runtime.sendMessage({getConfig: {}}, config => {
     if (config.popup) {
         value.value = config.popup.value;
         property.value = config.popup.property;
+        click.checked = config.popup.click;
         selector.value = config.popup.selector;
         index.value = config.popup.index;
         page.checked = config.popup.page;
+        disableValueAndPropertyField(click.checked);
     }
 });
 
@@ -109,6 +120,7 @@ function saveInputState(callback) {
             value: {
                 value: value.value,
                 property: property.value,
+                click: click.checked,
                 selector: selector.value,
                 index: index.value,
                 page: page.checked
@@ -121,10 +133,20 @@ function saveInputState(callback) {
     })
 }
 
+function disableValueAndPropertyField(clickEnabled) {
+    if (clickEnabled) {
+        value.disabled = true;
+        property.disabled = true;
+    } else {
+        value.disabled = false;
+        property.disabled = false;
+    }
+}
+
 function colorizeSelectButton(selectEnabled) {
     if (selectEnabled) {
-        document.getElementById('select').style.backgroundColor = 'lightgreen';
+        select.style.backgroundColor = 'lightgreen';
     } else {
-        document.getElementById('select').style.backgroundColor = null;
+        select.style.backgroundColor = null;
     }
 }

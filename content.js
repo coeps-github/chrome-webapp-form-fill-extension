@@ -1,5 +1,6 @@
 let value = '';
 let property = '';
+let click = false;
 let selector = '';
 let index = '';
 
@@ -7,7 +8,7 @@ document.onclick = () => {
     chrome.runtime.sendMessage({getSelectEnabled: {}}, selectEnabled => {
         if (selectEnabled) {
             chrome.runtime.sendMessage({setSelectEnabled: {value: false}}, () => {
-                setPopupValue(value, property, selector, index);
+                setPopupValue(value, property, click, selector, index);
             });
         }
     });
@@ -17,7 +18,7 @@ document.onmouseover = event => {
     chrome.runtime.sendMessage({getConfig: {}}, config => {
         if (config.selectEnabled) {
             markElement(event.target);
-            selectPossibleValues(event.target, config.popup.value);
+            selectPossibleValues(event.target, config.popup && config.popup.value);
         }
     });
 };
@@ -29,7 +30,9 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     }
     if (request.fillElementsTab) {
         request.fillElementsTab.value.rules.forEach(rule => {
-            if (!rule.url || request.fillElementsTab.value.url === rule.url) {
+            if (rule.click) {
+                clickElements(rule.selector, rule.index);
+            } else if (!rule.url || request.fillElementsTab.value.url === rule.url) {
                 fillElements(rule.value, rule.property, rule.selector, rule.index);
             }
         });
@@ -79,6 +82,27 @@ function fillElements(value, property, selector, index) {
     }
 }
 
+function clickElements(selector, index) {
+    if (selector) {
+        const event = new MouseEvent('click', {
+            view: window,
+            bubbles: true,
+            cancelable: true
+        });
+        const elements = document.querySelectorAll(selector);
+        elements.forEach((element, i) => {
+            const indexNum = parseInt(index);
+            if (isNaN(indexNum)) {
+                element.dispatchEvent(event);
+            } else {
+                if (indexNum === i) {
+                    element.dispatchEvent(event);
+                }
+            }
+        });
+    }
+}
+
 function selectPossibleValues(element, popupValue) {
     const tag = element.tagName.toLowerCase();
     const type = (element.type || '').toLowerCase();
@@ -90,6 +114,7 @@ function selectPossibleValues(element, popupValue) {
 
     value = '';
     property = '';
+    click = false;
     selector = '';
     index = '';
 
@@ -97,16 +122,20 @@ function selectPossibleValues(element, popupValue) {
     if (tag === 'input' && type === 'checkbox') {
         value = true;
     } else {
-        value = popupValue;
+        value = popupValue || '';
     }
 
-    // Property
+    // Property - Click
     if (tag === 'input') {
         if (type === 'checkbox') {
             property = 'checked';
         } else {
             property = 'value';
         }
+    } else if (tag === 'textarea') {
+        property = 'value';
+    } else {
+        click = true;
     }
 
     // Selector - TAG
@@ -115,7 +144,7 @@ function selectPossibleValues(element, popupValue) {
         selector = tag;
         bestQueryAmountSoFar = qAmount;
         bestSelectorSoFar = tag;
-        updatePopupValue(value, property, selector, index);
+        updatePopupValue(value, property, click, selector, index);
     } else if (bestQueryAmountSoFar > qAmount) {
         bestQueryAmountSoFar = qAmount;
         bestSelectorSoFar = tag;
@@ -135,7 +164,7 @@ function selectPossibleValues(element, popupValue) {
             selector = query;
             bestQueryAmountSoFar = queryAmount;
             bestSelectorSoFar = query;
-            updatePopupValue(value, property, selector, index);
+            updatePopupValue(value, property, click, selector, index);
             return true;
         } else if (bestQueryAmountSoFar > queryAmount) {
             bestQueryAmountSoFar = queryAmount;
@@ -161,7 +190,7 @@ function selectPossibleValues(element, popupValue) {
                     selector = query;
                     bestQueryAmountSoFar = queryAmount;
                     bestSelectorSoFar = query;
-                    updatePopupValue(value, property, selector, index);
+                    updatePopupValue(value, property, click, selector, index);
                     leaveEarly = true;
                     return true;
                 } else if (bestQueryAmountSoFar > queryAmount) {
@@ -187,7 +216,7 @@ function selectPossibleValues(element, popupValue) {
             index = i;
         }
     });
-    updatePopupValue(value, property, selector, index);
+    updatePopupValue(value, property, click, selector, index);
 
     logStage('selector - best so far - index', bestQueryAmountSoFar, bestSelectorSoFar, index);
 }
@@ -235,13 +264,14 @@ function getQueryAmount(query) {
     return document.querySelectorAll(query).length;
 }
 
-function updatePopupValue(value, property, selector, index) {
+function updatePopupValue(value, property, click, selector, index) {
     chrome.runtime.sendMessage({
         update: {
             value: 'popup',
             popup: {
                 value: value,
                 property: property,
+                click: click,
                 selector: selector,
                 index: index,
                 page: true
@@ -250,12 +280,13 @@ function updatePopupValue(value, property, selector, index) {
     });
 }
 
-function setPopupValue(value, property, selector, index) {
+function setPopupValue(value, property, click, selector, index) {
     chrome.runtime.sendMessage({
         setPopup: {
             value: {
                 value: value,
                 property: property,
+                click: click,
                 selector: selector,
                 index: index,
                 page: true

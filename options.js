@@ -1,11 +1,21 @@
 const form = document.getElementById('form');
 const config = document.getElementById('config');
 const addForm = document.getElementById('addForm');
+const addValue = document.getElementById('addvalue');
+const addProperty = document.getElementById('addproperty');
+const addClick = document.getElementById('addclick');
+const addSelector = document.getElementById('addselector');
+const addIndex = document.getElementById('addindex');
+const addUrl = document.getElementById('addurl');
 const add = document.getElementById('add');
 const save = document.getElementById('save');
 const clear = document.getElementById('clear');
 
 let currentIndex = 0;
+
+addClick.onchange = () => {
+    disableAddValueAndPropertyField(addClick.checked);
+};
 
 add.onclick = () => {
     if (!addForm.checkValidity()) {
@@ -13,14 +23,15 @@ add.onclick = () => {
     }
     add.disabled = true;
     config.innerHTML = config.innerHTML + createConfigEntry({
-        value: document.getElementById('addvalue').value,
-        property: document.getElementById('addproperty').value,
-        selector: document.getElementById('addselector').value,
-        index: document.getElementById('addindex').value,
-        url: document.getElementById('addurl').value
+        value: addValue.value,
+        property: addProperty.value,
+        click: addClick.checked,
+        selector: addSelector.value,
+        index: addIndex.value,
+        url: addUrl.value
     }, currentIndex);
     currentIndex++;
-    connectDeleteListener();
+    connectActionListeners();
     add.innerHTML = '&#10004;';
     setTimeout(() => {
         add.innerText = 'add';
@@ -35,6 +46,7 @@ save.onclick = () => {
     save.disabled = true;
     const value = document.querySelectorAll('[id^=value]');
     const property = document.querySelectorAll('[id^=property]');
+    const click = document.querySelectorAll('[id^=click]');
     const selector = document.querySelectorAll('[id^=selector]');
     const index = document.querySelectorAll('[id^=index]');
     const url = document.querySelectorAll('[id^=url]');
@@ -47,6 +59,7 @@ save.onclick = () => {
         data.setRules.value.push({
             value: value[i].value,
             property: property[i].value,
+            click: click[i].checked,
             selector: selector[i].value,
             index: index[i].value,
             url: url[i].value,
@@ -90,11 +103,21 @@ function createConfigEntries() {
             config.innerHTML = config.innerHTML + createConfigEntry(rule, currentIndex);
             currentIndex++;
         });
-        connectDeleteListener();
+        connectActionListeners();
     });
 }
 
-function connectDeleteListener() {
+function connectActionListeners() {
+    document.querySelectorAll('[id^=click]')
+        .forEach(click =>
+            click.onchange = () => {
+                const id = click.id.replace('click', '');
+                const value = document.getElementById('value' + id);
+                const property = document.getElementById('property' + id);
+                disableValueAndPropertyField(value, click.checked);
+                disableValueAndPropertyField(property, click.checked);
+            }
+        );
     document.querySelectorAll('[id^=delete]')
         .forEach(del =>
             del.onclick = () =>
@@ -106,11 +129,13 @@ function createConfigEntry(rule, index) {
     return '<div id="entry' + index + '" class="flex-center">' +
         '    <div class="space-bottom-bigger">' +
         '        <label class="space-right">' +
-        '            <input id="value' + index + '" class="input" type="text" placeholder="Value e.g. Test" value="' + rule.value + '" autocomplete="value">' +
+        '            <input id="value' + index + '" class="input" type="text" placeholder="Value e.g. Test" value="' + rule.value + '"  ' + (rule.click ? 'disabled' : '') + ' autocomplete="value">' +
         '        </label>' +
         '        <label class="space-right">' +
-        '            <input id="property' + index + '" class="input input--short" type="text" placeholder="Property e.g. value" value="' + rule.property + '" autocomplete="property" required>' +
+        '            <input id="property' + index + '" class="input input--short" type="text" placeholder="Property e.g. value" value="' + rule.property + '" ' + (rule.click ? 'disabled' : '') + ' autocomplete="property" required>' +
         '        </label>' +
+        '        <input id="click' + index + '" class="checkbox" type="checkbox" ' + (rule.click ? 'checked' : '') + '>' +
+        '        <label for="click' + index + '" class="checkbox-label space-right">dispatch click event</label>' +
         '        <label class="space-right">' +
         '            <input id="selector' + index + '" class="input" type="text" placeholder="Selector e.g. input[type=text]" value="' + rule.selector + '" autocomplete="selector" required>' +
         '        </label>' +
@@ -123,4 +148,13 @@ function createConfigEntry(rule, index) {
         '        <button id="delete' + index + '" type="button" class="button">delete</button>' +
         '    </div>' +
         '</div>';
+}
+
+function disableAddValueAndPropertyField(clickEnabled) {
+    disableValueAndPropertyField(addValue, clickEnabled);
+    disableValueAndPropertyField(addProperty, clickEnabled);
+}
+
+function disableValueAndPropertyField(element, clickEnabled) {
+    element.disabled = clickEnabled;
 }

@@ -26,11 +26,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
             }, () => sendResponse());
         });
     }
-    if (request.getPopup) {
-        chrome.storage.sync.get('config', data => {
-            sendResponse((data.config && data.config.popup) || {});
-        });
-    }
     if (request.setPopup) {
         chrome.storage.sync.get('config', data => {
             chrome.storage.sync.set({
@@ -67,6 +62,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                             {
                                 value: request.addRule.value.value,
                                 property: request.addRule.value.property,
+                                click: request.addRule.value.click,
                                 selector: request.addRule.value.selector,
                                 index: request.addRule.value.index,
                                 url: request.addRule.value.page ? url : ''
