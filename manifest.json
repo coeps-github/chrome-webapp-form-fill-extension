@@ -1,7 +1,7 @@
 {
   "name": "WebApp Form Filler",
   "short_name": "WAFF",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Automatically fills forms in your web applications. Especially handy for manual testing and development.",
   "manifest_version": 2,
   "permissions": ["activeTab","storage"],
