@@ -10,6 +10,7 @@ const addUrl = document.getElementById('addurl');
 const add = document.getElementById('add');
 const save = document.getElementById('save');
 const clear = document.getElementById('clear');
+const reset = document.getElementById('reset');
 const exp = document.getElementById('export');
 const imp = document.getElementById('import');
 const importResult = document.getElementById('import-result');
@@ -79,14 +80,22 @@ save.onclick = () => {
 
 clear.onclick = () => {
     clear.disabled = true;
-    chrome.runtime.sendMessage({setConfig: {value: null}}, () => {
-        config.innerHTML = null;
-        clear.innerHTML = '&#10004;';
-        setTimeout(() => {
-            clear.innerText = 'clear';
-            clear.disabled = false;
-        }, 500);
-    });
+    config.innerHTML = null;
+    clear.innerHTML = '&#10004;';
+    setTimeout(() => {
+        clear.innerText = 'clear';
+        clear.disabled = false;
+    }, 500);
+};
+
+reset.onclick = () => {
+    reset.disabled = true;
+    createConfigEntries();
+    reset.innerHTML = '&#10004;';
+    setTimeout(() => {
+        reset.innerText = 'reset';
+        reset.disabled = false;
+    }, 500);
 };
 
 exp.onclick = event => {
