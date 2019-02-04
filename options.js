@@ -99,12 +99,18 @@ reset.onclick = () => {
 };
 
 exp.onclick = event => {
+    exp.style.background = '#505050';
     event.preventDefault();
     chrome.runtime.sendMessage({getRules: {}}, rules => {
         const href = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(rules));
         exp.setAttribute('href', href);
-        exp.onclick = null;
-        exp.click();
+        exp.innerHTML = '&#10004;';
+        setTimeout(() => {
+            exp.innerText = 'export';
+            exp.style.background = null;
+            exp.onclick = null;
+            exp.click();
+        }, 500);
     });
 };
 
