@@ -1,4 +1,5 @@
 const form = document.getElementById('form');
+const preset = document.getElementById('preset');
 const fill = document.getElementById('fill');
 const value = document.getElementById('value');
 const property = document.getElementById('property');
@@ -12,13 +13,23 @@ const options = document.getElementById('options');
 
 fill.onclick = () => {
     fill.disabled = true;
-    chrome.runtime.sendMessage({fillElements: {}}, () => {
+    chrome.runtime.sendMessage({
+        fillElements: {
+            value: {
+                preset: preset.value
+            }
+        }
+    }, () => {
         fill.innerHTML = '&#10004;';
         setTimeout(() => {
             fill.innerText = 'fill';
             fill.disabled = false;
         }, 500);
     });
+};
+
+preset.onchange = () => {
+    saveInputState();
 };
 
 value.oninput = () => {
@@ -63,6 +74,7 @@ save.onclick = () => {
     chrome.runtime.sendMessage({
             addRule: {
                 value: {
+                    preset: preset.value,
                     value: value.value,
                     property: property.value,
                     click: click.checked,
@@ -88,6 +100,7 @@ options.onclick = () => {
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.update && request.update.value === 'popup') {
+        preset.value = request.update.popup.preset;
         value.value = request.update.popup.value;
         property.value = request.update.popup.property;
         click.checked = request.update.popup.click;
@@ -101,9 +114,13 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 });
 
 chrome.runtime.sendMessage({getConfig: {}}, config => {
+    let addedPresets = {};
     colorizeSelectButton(config.selectEnabled);
-
+    if (config.rules) {
+        addedPresets = createPresetOptions(config.rules);
+    }
     if (config.popup) {
+        preset.value = addedPresets[config.popup.preset] ? config.popup.preset : '';
         value.value = config.popup.value;
         property.value = config.popup.property;
         click.checked = config.popup.click;
@@ -118,6 +135,7 @@ function saveInputState(callback) {
     chrome.runtime.sendMessage({
         setPopup: {
             value: {
+                preset: preset.value,
                 value: value.value,
                 property: property.value,
                 click: click.checked,
@@ -131,6 +149,20 @@ function saveInputState(callback) {
             callback();
         }
     })
+}
+
+function createPresetOptions(rules) {
+    const addedPresets = {'': true};
+    preset.innerHTML = null;
+    preset.innerHTML = preset.innerHTML + '<option class="select-item" value="">default preset</option>';
+    rules.forEach(rule => {
+        const presetName = rule.preset || '';
+        if (!addedPresets[presetName]) {
+            addedPresets[presetName] = true;
+            preset.innerHTML = preset.innerHTML + '<option class="select-item" value="' + presetName + '">' + presetName + '</option>';
+        }
+    });
+    return addedPresets;
 }
 
 function disableValueAndPropertyField(clickEnabled) {

@@ -1,14 +1,10 @@
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    if (request.debug) {
+        chrome.management.getSelf(info => sendResponse(info.installType === 'development'));
+    }
     if (request.getConfig) {
         chrome.storage.sync.get('config', data => {
             sendResponse(data.config || {});
-        });
-    }
-    if (request.setConfig) {
-        chrome.storage.sync.get('config', () => {
-            chrome.storage.sync.set({
-                config: request.setConfig.value
-            }, () => sendResponse());
         });
     }
     if (request.getSelectEnabled) {
@@ -60,6 +56,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                         rules: [
                             ...(data.config && data.config.rules) || [],
                             {
+                                preset: request.addRule.value.preset,
                                 value: request.addRule.value.value,
                                 property: request.addRule.value.property,
                                 click: request.addRule.value.click,
@@ -93,7 +90,8 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                     fillElementsTab: {
                         value: {
                             rules: (data.config && data.config.rules) || [],
-                            url: url
+                            url: url,
+                            preset: request.fillElements.value.preset
                         }
                     }
                 }));

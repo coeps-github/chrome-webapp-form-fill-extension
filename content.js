@@ -1,14 +1,18 @@
+let debug = false;
+let preset = '';
 let value = '';
 let property = '';
 let click = false;
 let selector = '';
 let index = '';
 
+// TODO: put everything possible into background
+
 document.onclick = () => {
     chrome.runtime.sendMessage({getSelectEnabled: {}}, selectEnabled => {
         if (selectEnabled) {
             chrome.runtime.sendMessage({setSelectEnabled: {value: false}}, () => {
-                setPopupValue(value, property, click, selector, index);
+                setPopupValue(preset, value, property, click, selector, index);
             });
         }
     });
@@ -30,16 +34,26 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     }
     if (request.fillElementsTab) {
         request.fillElementsTab.value.rules.forEach(rule => {
-            if (rule.click) {
-                clickElements(rule.selector, rule.index);
-            } else if (!rule.url || request.fillElementsTab.value.url === rule.url) {
-                fillElements(rule.value, rule.property, rule.selector, rule.index);
+            // TODO: put this logic into background script
+            if (rule.preset === request.fillElementsTab.value.preset) {
+                if (rule.click) {
+                    clickElements(rule.selector, rule.index);
+                } else if (!rule.url || request.fillElementsTab.value.url === rule.url) {
+                    fillElements(rule.value, rule.property, rule.selector, rule.index);
+                } else {
+                    log('Skipping rule because of click and url, in rule click: >' + rule.click +
+                        '< requested url: >' + request.fillElementsTab.value.url + '< in rule url: >' + rule.url + '<');
+                }
+            } else {
+                log('Skipping rule because of preset, requested preset: >' + request.fillElementsTab.value.preset + '< in rule preset: >' + rule.preset + '<');
             }
         });
         sendResponse();
     }
     return true;
 });
+
+chrome.runtime.sendMessage({debug: {}}, isDebug => debug = isDebug);
 
 function markElement(element) {
     const markedElements = document.querySelectorAll('.mark');
@@ -103,6 +117,7 @@ function clickElements(selector, index) {
     }
 }
 
+// TODO: put this logic into background script
 function selectPossibleValues(element, popupValue) {
     const tag = element.tagName.toLowerCase();
     const type = (element.type || '').toLowerCase();
@@ -112,6 +127,7 @@ function selectPossibleValues(element, popupValue) {
     let bestQueryAmountSoFar = 999999;
     let bestSelectorSoFar = '';
 
+    preset = '';
     value = '';
     property = '';
     click = false;
@@ -134,6 +150,8 @@ function selectPossibleValues(element, popupValue) {
         }
     } else if (tag === 'textarea') {
         property = 'value';
+    } else if (tag === 'select') {
+        property = 'value';
     } else {
         click = true;
     }
@@ -144,7 +162,7 @@ function selectPossibleValues(element, popupValue) {
         selector = tag;
         bestQueryAmountSoFar = qAmount;
         bestSelectorSoFar = tag;
-        updatePopupValue(value, property, click, selector, index);
+        updatePopupValue(preset, value, property, click, selector, index);
     } else if (bestQueryAmountSoFar > qAmount) {
         bestQueryAmountSoFar = qAmount;
         bestSelectorSoFar = tag;
@@ -164,7 +182,7 @@ function selectPossibleValues(element, popupValue) {
             selector = query;
             bestQueryAmountSoFar = queryAmount;
             bestSelectorSoFar = query;
-            updatePopupValue(value, property, click, selector, index);
+            updatePopupValue(preset, value, property, click, selector, index);
             return true;
         } else if (bestQueryAmountSoFar > queryAmount) {
             bestQueryAmountSoFar = queryAmount;
@@ -190,7 +208,7 @@ function selectPossibleValues(element, popupValue) {
                     selector = query;
                     bestQueryAmountSoFar = queryAmount;
                     bestSelectorSoFar = query;
-                    updatePopupValue(value, property, click, selector, index);
+                    updatePopupValue(preset, value, property, click, selector, index);
                     leaveEarly = true;
                     return true;
                 } else if (bestQueryAmountSoFar > queryAmount) {
@@ -216,7 +234,7 @@ function selectPossibleValues(element, popupValue) {
             index = i;
         }
     });
-    updatePopupValue(value, property, click, selector, index);
+    updatePopupValue(preset, value, property, click, selector, index);
 
     logStage('selector - best so far - index', bestQueryAmountSoFar, bestSelectorSoFar, index);
 }
@@ -264,11 +282,12 @@ function getQueryAmount(query) {
     return document.querySelectorAll(query).length;
 }
 
-function updatePopupValue(value, property, click, selector, index) {
+function updatePopupValue(preset, value, property, click, selector, index) {
     chrome.runtime.sendMessage({
         update: {
             value: 'popup',
             popup: {
+                preset: preset,
                 value: value,
                 property: property,
                 click: click,
@@ -280,10 +299,11 @@ function updatePopupValue(value, property, click, selector, index) {
     });
 }
 
-function setPopupValue(value, property, click, selector, index) {
+function setPopupValue(preset, value, property, click, selector, index) {
     chrome.runtime.sendMessage({
         setPopup: {
             value: {
+                preset: preset,
                 value: value,
                 property: property,
                 click: click,
@@ -295,6 +315,14 @@ function setPopupValue(value, property, click, selector, index) {
     });
 }
 
+function log(message) {
+    if (debug) {
+        console.log(message);
+    }
+}
+
 function logStage(name, bestQueryAmountSoFar, bestSelectorSoFar, index) {
-    console.log(name + ' amount: ' + bestQueryAmountSoFar + ' selector: ' + bestSelectorSoFar + (index ? ' index: ' + index : ''));
+    if (debug) {
+        console.log(name + ' amount: ' + bestQueryAmountSoFar + ' selector: ' + bestSelectorSoFar + (index ? ' index: ' + index : ''));
+    }
 }

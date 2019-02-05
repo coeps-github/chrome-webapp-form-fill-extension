@@ -1,6 +1,7 @@
 const form = document.getElementById('form');
 const config = document.getElementById('config');
 const addForm = document.getElementById('addForm');
+const addPreset = document.getElementById('addpreset');
 const addValue = document.getElementById('addvalue');
 const addProperty = document.getElementById('addproperty');
 const addClick = document.getElementById('addclick');
@@ -27,6 +28,7 @@ add.onclick = () => {
     }
     add.disabled = true;
     config.innerHTML = config.innerHTML + createConfigEntry({
+        preset: addPreset.value,
         value: addValue.value,
         property: addProperty.value,
         click: addClick.checked,
@@ -48,6 +50,7 @@ save.onclick = () => {
         return;
     }
     save.disabled = true;
+    const preset = document.querySelectorAll('[id^=preset]');
     const value = document.querySelectorAll('[id^=value]');
     const property = document.querySelectorAll('[id^=property]');
     const click = document.querySelectorAll('[id^=click]');
@@ -61,6 +64,7 @@ save.onclick = () => {
     };
     for (let i = 0; i < value.length; i++) {
         data.setRules.value.push({
+            preset: preset[i].value,
             value: value[i].value,
             property: property[i].value,
             click: click[i].checked,
@@ -199,6 +203,9 @@ function connectActionListeners() {
 function createConfigEntry(rule, index) {
     return '<div id="entry' + index + '" class="flex flex--center">' +
         '    <div class="inline-flex flex--center flex--wrap space-bottom-bigger">' +
+        '        <label class="space-right">' +
+        '            <input id="preset' + index + '" class="input" type="text" placeholder="Preset name (empty is default)" value="' + rule.preset + '" autocomplete="preset">' +
+        '        </label>' +
         '        <label class="space-right">' +
         '            <input id="value' + index + '" class="input" type="text" placeholder="Value e.g. Test" value="' + rule.value + '"  ' + (rule.click ? 'disabled' : '') + ' autocomplete="value">' +
         '        </label>' +
