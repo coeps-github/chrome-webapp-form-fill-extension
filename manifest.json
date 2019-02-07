@@ -19,11 +19,6 @@
     "scripts": ["background.js"],
     "persistent": false
   },
-  "content_scripts": [{
-    "matches": ["*://*/*"],
-    "css": ["marker.css"],
-    "js": ["content.js"]
-  }],
   "icons": {
     "16": "images/icon16.png",
     "32": "images/icon32.png",
