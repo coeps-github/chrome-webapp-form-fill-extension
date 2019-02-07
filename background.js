@@ -265,22 +265,30 @@ window.com.coeps.waff['background'] = window.com.coeps.waff['background'] || fun
     }
 
     function chooseBestRating(queryRatings) {
-        const targetRating = 1;
-        let bestRating = {};
-        queryRatings.some(queryRating => {
-            if (queryRating.rating === targetRating) {
-                bestRating = {
-                    value: queryRating.query.value,
-                    property: queryRating.query.property,
-                    click: queryRating.query.click,
-                    selector: queryRating.query.selector,
-                    index: queryRating.index
-                };
-                return true;
-            }
-            return false;
-        });
-        log('BestRating: ' + JSON.stringify(bestRating));
+        let targetRating = 0;
+        let bestRating = null;
+        while (bestRating === null && targetRating < 100) {
+            targetRating++;
+            queryRatings.some(queryRating => {
+                if (queryRating.rating === targetRating) {
+                    bestRating = {
+                        value: queryRating.query.value,
+                        property: queryRating.query.property,
+                        click: queryRating.query.click,
+                        selector: queryRating.query.selector,
+                        index: queryRating.index
+                    };
+                    return true;
+                }
+                return false;
+            });
+        }
+        if (!bestRating) {
+            bestRating = {};
+            log('BestRating above: ' + targetRating + ', giving up.');
+        } else {
+            log('BestRating: ' + JSON.stringify(bestRating));
+        }
         return bestRating;
     }
 
