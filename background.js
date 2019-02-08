@@ -96,13 +96,38 @@ window.com.coeps.waff['background'] = window.com.coeps.waff['background'] || fun
                 sendResponse();
             });
         }
+        if (request.fillElement) {
+            chrome.storage.sync.get('config', data => {
+                currentTab(id => {
+                    const popup = data.config && data.config.popup || {};
+                    if (popup.click) {
+                        chrome.tabs.sendMessage(id, {
+                            clickElementsContent: {
+                                value: {
+                                    rules: [popup],
+                                }
+                            }
+                        });
+                    } else {
+                        chrome.tabs.sendMessage(id, {
+                            fillElementsContent: {
+                                value: {
+                                    rules: [popup],
+                                }
+                            }
+                        });
+                    }
+                });
+                sendResponse();
+            });
+        }
         if (request.fillElements) {
             chrome.storage.sync.get('config', data => {
                 currentTab((id, url) => {
                     const popup = data.config && data.config.popup || {};
                     const rules = data.config && data.config.rules || [];
-                    const clickRules = rules.filter(rule => !!(rule.preset === popup.preset && rule.click));
-                    const fillRules = rules.filter(rule => rule.preset === popup.preset && (!rule.url || rule.url === url));
+                    const clickRules = rules.filter(rule => rule.preset === popup.preset && (!rule.url || rule.url === url) && rule.click);
+                    const fillRules = rules.filter(rule => rule.preset === popup.preset && (!rule.url || rule.url === url) && !rule.click);
                     if (clickRules.length > 0) {
                         chrome.tabs.sendMessage(id, {
                             clickElementsContent: {

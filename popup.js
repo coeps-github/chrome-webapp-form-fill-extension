@@ -13,6 +13,7 @@ window.com.coeps.waff['popup'] = window.com.coeps.waff['popup'] || function() {
     const index = document.getElementById('index');
     const page = document.getElementById('page');
     const select = document.getElementById('select');
+    const test = document.getElementById('test');
     const save = document.getElementById('save');
     const options = document.getElementById('options');
 
@@ -65,6 +66,19 @@ window.com.coeps.waff['popup'] = window.com.coeps.waff['popup'] || function() {
                 }
             }
         );
+    };
+
+    test.onclick = () => {
+        fill.disabled = true;
+        chrome.runtime.sendMessage({markElements: {}}, () => {
+            chrome.runtime.sendMessage({fillElement: {}}, () => {
+                fill.innerHTML = '&#10004;';
+                setTimeout(() => {
+                    fill.innerText = 'fill';
+                    fill.disabled = false;
+                }, 500);
+            });
+        });
     };
 
     save.onclick = () => {
