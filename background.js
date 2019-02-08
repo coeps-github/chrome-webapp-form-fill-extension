@@ -87,6 +87,7 @@ window.com.coeps.waff['background'] = window.com.coeps.waff['background'] || fun
                                     property: request.addRule.value.property,
                                     click: request.addRule.value.click,
                                     selector: request.addRule.value.selector,
+                                    xpath: request.addRule.value.xpath,
                                     index: request.addRule.value.index,
                                     url: request.addRule.value.page ? url : ''
                                 }
@@ -103,6 +104,7 @@ window.com.coeps.waff['background'] = window.com.coeps.waff['background'] || fun
                         markElementsContent: {
                             value: {
                                 selector: (data.config && data.config.popup && data.config.popup.selector) || '',
+                                xpath: (data.config && data.config.popup && data.config.popup.xpath) || '',
                                 index: (data.config && data.config.popup && data.config.popup.index) || ''
                             }
                         }
@@ -185,6 +187,7 @@ window.com.coeps.waff['background'] = window.com.coeps.waff['background'] || fun
                         property: bestRating.property || '',
                         click: bestRating.click || '',
                         selector: bestRating.selector || '',
+                        xpath: bestRating.xpath || '',
                         index: bestRating.index || ''
                     };
                     if (select) {
@@ -244,6 +247,7 @@ window.com.coeps.waff['background'] = window.com.coeps.waff['background'] || fun
         const tag = selectedElement.tag;
         const type = selectedElement.type;
         const attributeQueries = getAttributeQueries(selectedElement.attributes);
+        const text  = selectedElement.text;
 
         const targetRating = 1;
         const queries = [];
@@ -251,6 +255,8 @@ window.com.coeps.waff['background'] = window.com.coeps.waff['background'] || fun
         let value = undefined;
         let property = undefined;
         let click = false;
+        let selector = undefined;
+        let xpath = undefined;
 
         // Value
         if (tag === 'input' && type === 'checkbox') {
@@ -275,21 +281,24 @@ window.com.coeps.waff['background'] = window.com.coeps.waff['background'] || fun
         }
 
         // Selector - TAG
-        queries.push(createQuery(value, property, click, selectedElement.tag));
+        queries.push(createQuery(value, property, click, selectedElement.tag, xpath));
 
         // Selector - TAG - Attributes
         attributeQueries.forEach(attr => {
-            queries.push(createQuery(value, property, click, tag + attr));
+            queries.push(createQuery(value, property, click, tag + attr, xpath));
         });
 
         // Selector - TAG - Two Attributes
         attributeQueries.forEach(attr1 => {
             attributeQueries.forEach(attr2 => {
                 if (attr1 !== attr2) {
-                    queries.push(createQuery(value, property, click, tag + attr1 + attr2));
+                    queries.push(createQuery(value, property, click, tag + attr1 + attr2, xpath));
                 }
             });
         });
+
+        // Selector - XPath
+        queries.push(createQuery(value, property, click, selector, '//' + tag + '[text()=\'' + text + '\']'));
 
         return {
             targetRating: targetRating,
@@ -297,12 +306,13 @@ window.com.coeps.waff['background'] = window.com.coeps.waff['background'] || fun
         };
     }
 
-    function createQuery(value, property, click, selector) {
+    function createQuery(value, property, click, selector, xpath) {
         return {
             value: value,
             property: property,
             click: click,
-            selector: selector
+            selector: selector,
+            xpath: xpath
         };
     }
 
@@ -318,6 +328,7 @@ window.com.coeps.waff['background'] = window.com.coeps.waff['background'] || fun
                         property: queryRating.query.property,
                         click: queryRating.query.click,
                         selector: queryRating.query.selector,
+                        xpath: queryRating.query.xpath,
                         index: queryRating.index
                     };
                     return true;

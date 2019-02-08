@@ -11,6 +11,7 @@ window.com.coeps.waff['options'] = window.com.coeps.waff['options'] || function(
     const addProperty = document.getElementById('addproperty');
     const addClick = document.getElementById('addclick');
     const addSelector = document.getElementById('addselector');
+    const addXpath = document.getElementById('addxpath');
     const addIndex = document.getElementById('addindex');
     const addUrl = document.getElementById('addurl');
     const add = document.getElementById('add');
@@ -27,6 +28,22 @@ window.com.coeps.waff['options'] = window.com.coeps.waff['options'] || function(
         disableAddValueAndPropertyField(addClick.checked);
     };
 
+    addSelector.oninput = () => {
+        if (addSelector.value) {
+            setNotRequired(addXpath);
+        } else {
+            setRequired(addXpath);
+        }
+    };
+
+    addXpath.oninput = () => {
+        if (addXpath.value) {
+            setNotRequired(addSelector);
+        } else {
+            setRequired(addSelector);
+        }
+    };
+
     add.onclick = () => {
         if (!addForm.checkValidity()) {
             return;
@@ -38,6 +55,7 @@ window.com.coeps.waff['options'] = window.com.coeps.waff['options'] || function(
             property: addProperty.value,
             click: addClick.checked,
             selector: addSelector.value,
+            xpath: addXpath.value,
             index: addIndex.value,
             url: addUrl.value
         }, currentIndex);
@@ -60,6 +78,7 @@ window.com.coeps.waff['options'] = window.com.coeps.waff['options'] || function(
         const property = document.querySelectorAll('[id^=property]');
         const click = document.querySelectorAll('[id^=click]');
         const selector = document.querySelectorAll('[id^=selector]');
+        const xpath = document.querySelectorAll('[id^=xpath]');
         const index = document.querySelectorAll('[id^=index]');
         const url = document.querySelectorAll('[id^=url]');
         const data = {
@@ -74,6 +93,7 @@ window.com.coeps.waff['options'] = window.com.coeps.waff['options'] || function(
                 property: property[i].value,
                 click: click[i].checked,
                 selector: selector[i].value,
+                xpath: xpath[i].value,
                 index: index[i].value,
                 url: url[i].value,
             });
@@ -203,6 +223,30 @@ window.com.coeps.waff['options'] = window.com.coeps.waff['options'] || function(
                     moveChildToIndex(config, me, myIndex + 1);
                 }
             );
+        document.querySelectorAll('[id^=selector]')
+            .forEach(selector =>
+                selector.oninput = () => {
+                    const id = selector.id.replace('selector', '');
+                    const xpath = document.getElementById('xpath' + id);
+                    if (selector.value) {
+                        setNotRequired(xpath);
+                    } else {
+                        setRequired(xpath);
+                    }
+                }
+            );
+        document.querySelectorAll('[id^=xpath]')
+            .forEach(xpath =>
+                xpath.oninput = () => {
+                    const id = xpath.id.replace('xpath', '');
+                    const selector = document.getElementById('selector' + id);
+                    if (xpath.value) {
+                        setNotRequired(selector);
+                    } else {
+                        setRequired(selector);
+                    }
+                }
+            );
     }
 
     function createConfigEntry(rule, index) {
@@ -212,7 +256,7 @@ window.com.coeps.waff['options'] = window.com.coeps.waff['options'] || function(
             '            <input id="preset' + index + '" class="input" type="text" placeholder="Preset name (empty is default)" value="' + rule.preset + '" autocomplete="preset">' +
             '        </label>' +
             '        <label class="space-right">' +
-            '            <input id="value' + index + '" class="input" type="text" placeholder="Value e.g. Test" value="' + rule.value + '"  ' + (rule.click ? 'disabled' : '') + ' autocomplete="value">' +
+            '            <input id="value' + index + '" class="input" type="text" placeholder="Value e.g. Hello" value="' + rule.value + '"  ' + (rule.click ? 'disabled' : '') + ' autocomplete="value">' +
             '        </label>' +
             '        <label class="space-right">' +
             '            <input id="property' + index + '" class="input input--short" type="text" placeholder="Property e.g. value" value="' + rule.property + '" ' + (rule.click ? 'disabled' : '') + ' autocomplete="property" required>' +
@@ -221,6 +265,9 @@ window.com.coeps.waff['options'] = window.com.coeps.waff['options'] || function(
             '        <label for="click' + index + '" class="checkbox-label space-right">dispatch click event</label>' +
             '        <label class="space-right">' +
             '            <input id="selector' + index + '" class="input" type="text" placeholder="Selector e.g. input[type=text]" value="' + rule.selector + '" autocomplete="selector" required>' +
+            '        </label>' +
+            '        <label class="space-right">' +
+            '            <input id="xpath' + index + '" class="input" type="text" placeholder="XPath e.g. //div[text()=\'Hello\']" value="' + rule.xpath + '" autocomplete="xpath" required>' +
             '        </label>' +
             '        <label class="space-right">' +
             '            <input id="index' + index + '" class="input input--shorter" type="text" placeholder="Index e.g. 3" value="' + rule.index + '" autocomplete="index">' +
@@ -263,6 +310,14 @@ window.com.coeps.waff['options'] = window.com.coeps.waff['options'] || function(
             index = 0;
         }
         parent.insertBefore(child, parent.children[index]);
+    }
+
+    function setRequired(element) {
+        element.required = true;
+    }
+
+    function setNotRequired(element) {
+        element.required = false;
     }
 
 }();

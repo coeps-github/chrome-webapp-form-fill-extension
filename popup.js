@@ -10,6 +10,7 @@ window.com.coeps.waff['popup'] = window.com.coeps.waff['popup'] || function() {
     const property = document.getElementById('property');
     const click = document.getElementById('click');
     const selector = document.getElementById('selector');
+    const xpath = document.getElementById('xpath');
     const index = document.getElementById('index');
     const page = document.getElementById('page');
     const select = document.getElementById('select');
@@ -46,6 +47,20 @@ window.com.coeps.waff['popup'] = window.com.coeps.waff['popup'] || function() {
     };
 
     selector.oninput = () => {
+        if (selector.value) {
+            setNotRequired(xpath);
+        } else {
+            setRequired(xpath);
+        }
+        saveInputState(() => chrome.runtime.sendMessage({markElements: {}}));
+    };
+
+    xpath.oninput = () => {
+        if (xpath.value) {
+            setNotRequired(selector);
+        } else {
+            setRequired(selector);
+        }
         saveInputState(() => chrome.runtime.sendMessage({markElements: {}}));
     };
 
@@ -69,13 +84,13 @@ window.com.coeps.waff['popup'] = window.com.coeps.waff['popup'] || function() {
     };
 
     test.onclick = () => {
-        fill.disabled = true;
+        test.disabled = true;
         chrome.runtime.sendMessage({markElements: {}}, () => {
             chrome.runtime.sendMessage({fillElement: {}}, () => {
-                fill.innerHTML = '&#10004;';
+                test.innerHTML = '&#10004;';
                 setTimeout(() => {
-                    fill.innerText = 'fill';
-                    fill.disabled = false;
+                    test.innerText = 'fill';
+                    test.disabled = false;
                 }, 500);
             });
         });
@@ -94,6 +109,7 @@ window.com.coeps.waff['popup'] = window.com.coeps.waff['popup'] || function() {
                         property: property.value,
                         click: click.checked,
                         selector: selector.value,
+                        xpath: xpath.value,
                         index: index.value,
                         page: page.checked
                     }
@@ -119,6 +135,7 @@ window.com.coeps.waff['popup'] = window.com.coeps.waff['popup'] || function() {
             property.value = request.updatePopup.value.property;
             click.checked = request.updatePopup.value.click;
             selector.value = request.updatePopup.value.selector;
+            xpath.value = request.updatePopup.value.xpath;
             index.value = request.updatePopup.value.index;
             page.checked = true;
             disableValueAndPropertyField(click.checked);
@@ -139,6 +156,7 @@ window.com.coeps.waff['popup'] = window.com.coeps.waff['popup'] || function() {
                     property: property.value,
                     click: click.checked,
                     selector: selector.value,
+                    xpath: xpath.value,
                     index: index.value,
                     page: page.checked
                 }
@@ -162,6 +180,7 @@ window.com.coeps.waff['popup'] = window.com.coeps.waff['popup'] || function() {
             property.value = config.popup.property;
             click.checked = config.popup.click;
             selector.value = config.popup.selector;
+            xpath.value = config.popup.xpath;
             index.value = config.popup.index;
             page.checked = config.popup.page;
             disableValueAndPropertyField(click.checked);
@@ -198,6 +217,14 @@ window.com.coeps.waff['popup'] = window.com.coeps.waff['popup'] || function() {
         } else {
             select.style.backgroundColor = null;
         }
+    }
+
+    function setRequired(element) {
+        element.required = true;
+    }
+
+    function setNotRequired(element) {
+        element.required = false;
     }
 
     return {
