@@ -22,6 +22,21 @@ window.com.coeps.waff['background'] = window.com.coeps.waff['background'] || fun
                 sendResponse(!!(data.config && data.config.selectEnabled));
             });
         }
+        if (request.disableSelectEnabled) {
+            chrome.storage.sync.get('config', data => {
+                const selectEnabled = !!(data.config && data.config.selectEnabled);
+                if (selectEnabled) {
+                    chrome.storage.sync.set({
+                        config: {
+                            ...data.config || {},
+                            selectEnabled: false
+                        }
+                    }, () => sendResponse(true));
+                } else {
+                    sendResponse(false);
+                }
+            });
+        }
         if (request.toggleSelectEnabled) {
             chrome.storage.sync.get('config', data => {
                 const selectEnabled = !!(data.config && data.config.selectEnabled);
@@ -246,6 +261,8 @@ window.com.coeps.waff['background'] = window.com.coeps.waff['background'] || fun
         if (tag === 'input') {
             if (type === 'checkbox') {
                 property = 'checked';
+            } else if (type === 'submit' || type === 'button' || type === 'reset') {
+                click = true;
             } else {
                 property = 'value';
             }

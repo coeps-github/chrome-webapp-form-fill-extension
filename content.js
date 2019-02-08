@@ -6,8 +6,8 @@ window.com.coeps.waff['content'] = window.com.coeps.waff['content'] || function 
     let previousElement = null;
 
     document.onclick = event => {
-        chrome.runtime.sendMessage({toggleSelectEnabled: {}}, selectEnabled => {
-            if (!selectEnabled) {
+        chrome.runtime.sendMessage({disableSelectEnabled: {}}, disabled => {
+            if (disabled) {
                 markElement(event.target);
                 highlightedElement(event.target, true);
             }
