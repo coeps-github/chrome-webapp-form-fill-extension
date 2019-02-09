@@ -139,6 +139,7 @@ window.com.coeps.waff['popup'] = window.com.coeps.waff['popup'] || function() {
 
     chrome.runtime.sendMessage({injectContentScript: {}});
     chrome.runtime.sendMessage({getConfig: {}}, config => updateUI(config));
+    chrome.runtime.sendMessage({markElements: {}});
 
     function saveInputState(callback) {
         chrome.runtime.sendMessage({
