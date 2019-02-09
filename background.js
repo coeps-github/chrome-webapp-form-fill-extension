@@ -298,7 +298,7 @@ window.com.coeps.waff['background'] = window.com.coeps.waff['background'] || fun
         });
 
         // Selector - XPath
-        queries.push(createQuery(value, property, click, selector, '//' + tag + '[text()=\'' + text + '\']'));
+        queries.push(createQuery(value, property, click, selector, '//' + tag + '[contains(.,\'' + text + '\')]'));
 
         return {
             targetRating: targetRating,

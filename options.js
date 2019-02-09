@@ -25,23 +25,15 @@ window.com.coeps.waff['options'] = window.com.coeps.waff['options'] || function(
     let currentIndex = 0;
 
     addClick.onchange = () => {
-        disableAddValueAndPropertyField(addClick.checked);
+        disableAddValueAndPropertyField(addValue, addProperty, addClick.checked);
     };
 
     addSelector.oninput = () => {
-        if (addSelector.value) {
-            setNotRequired(addXpath);
-        } else {
-            setRequired(addXpath);
-        }
+        setSelectorAndXpathFieldRequired(addSelector, addXpath);
     };
 
     addXpath.oninput = () => {
-        if (addXpath.value) {
-            setNotRequired(addSelector);
-        } else {
-            setRequired(addSelector);
-        }
+        setSelectorAndXpathFieldRequired(addSelector, addXpath);
     };
 
     add.onclick = () => {
@@ -198,8 +190,7 @@ window.com.coeps.waff['options'] = window.com.coeps.waff['options'] || function(
                     const id = click.id.replace('click', '');
                     const value = document.getElementById('value' + id);
                     const property = document.getElementById('property' + id);
-                    disableValueAndPropertyField(value, click.checked);
-                    disableValueAndPropertyField(property, click.checked);
+                    disableAddValueAndPropertyField(value, property, click.checked);
                 }
             );
         document.querySelectorAll('[id^=delete]')
@@ -228,11 +219,7 @@ window.com.coeps.waff['options'] = window.com.coeps.waff['options'] || function(
                 selector.oninput = () => {
                     const id = selector.id.replace('selector', '');
                     const xpath = document.getElementById('xpath' + id);
-                    if (selector.value) {
-                        setNotRequired(xpath);
-                    } else {
-                        setRequired(xpath);
-                    }
+                    setSelectorAndXpathFieldRequired(selector, xpath);
                 }
             );
         document.querySelectorAll('[id^=xpath]')
@@ -240,11 +227,7 @@ window.com.coeps.waff['options'] = window.com.coeps.waff['options'] || function(
                 xpath.oninput = () => {
                     const id = xpath.id.replace('xpath', '');
                     const selector = document.getElementById('selector' + id);
-                    if (xpath.value) {
-                        setNotRequired(selector);
-                    } else {
-                        setRequired(selector);
-                    }
+                    setSelectorAndXpathFieldRequired(selector, xpath);
                 }
             );
     }
@@ -264,10 +247,10 @@ window.com.coeps.waff['options'] = window.com.coeps.waff['options'] || function(
             '        <input id="click' + index + '" class="checkbox" type="checkbox" ' + (rule.click ? 'checked' : '') + '>' +
             '        <label for="click' + index + '" class="checkbox-label space-right">dispatch click event</label>' +
             '        <label class="space-right">' +
-            '            <input id="selector' + index + '" class="input" type="text" placeholder="Selector e.g. input[type=text]" value="' + rule.selector + '" autocomplete="selector" required>' +
+            '            <input id="selector' + index + '" class="input" type="text" placeholder="Selector e.g. input[type=text]" value="' + rule.selector + '" autocomplete="selector" ' + (!rule.xpath ? 'required' : '') + '>' +
             '        </label>' +
             '        <label class="space-right">' +
-            '            <input id="xpath' + index + '" class="input" type="text" placeholder="XPath e.g. //div[text()=\'Hello\']" value="' + rule.xpath + '" autocomplete="xpath" required>' +
+            '            <input id="xpath' + index + '" class="input" type="text" placeholder="XPath e.g. //div[contains(.,\'Hello\')]" value="' + rule.xpath + '" autocomplete="xpath" ' + (!rule.selector ? 'required' : '') + '>' +
             '        </label>' +
             '        <label class="space-right">' +
             '            <input id="index' + index + '" class="input input--shorter" type="text" placeholder="Index e.g. 3" value="' + rule.index + '" autocomplete="index">' +
@@ -284,13 +267,14 @@ window.com.coeps.waff['options'] = window.com.coeps.waff['options'] || function(
             '</div>';
     }
 
-    function disableAddValueAndPropertyField(clickEnabled) {
-        disableValueAndPropertyField(addValue, clickEnabled);
-        disableValueAndPropertyField(addProperty, clickEnabled);
+    function disableAddValueAndPropertyField(value, property, disabled) {
+        value.disabled = disabled;
+        property.disabled = disabled;
     }
 
-    function disableValueAndPropertyField(element, clickEnabled) {
-        element.disabled = clickEnabled;
+    function setSelectorAndXpathFieldRequired(selector, xpath) {
+        selector.required = !xpath.value;
+        xpath.required = !selector.value;
     }
 
     function getElementIndex(element) {
@@ -310,14 +294,6 @@ window.com.coeps.waff['options'] = window.com.coeps.waff['options'] || function(
             index = 0;
         }
         parent.insertBefore(child, parent.children[index]);
-    }
-
-    function setRequired(element) {
-        element.required = true;
-    }
-
-    function setNotRequired(element) {
-        element.required = false;
     }
 
 }();

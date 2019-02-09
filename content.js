@@ -160,7 +160,7 @@ window.com.coeps.waff['content'] = window.com.coeps.waff['content'] || function 
     function getQueryRatings(element, queries) {
         const ratings = [];
         queries.queries.some(query => {
-            const elements = getElements();
+            const elements = getElements(query.selector, query.xpath);
             const rating = elements.length;
             let index = 0;
             elements.forEach((elem, i) => {
@@ -181,15 +181,15 @@ window.com.coeps.waff['content'] = window.com.coeps.waff['content'] || function 
     function getElements(selector, xpath) {
         const elements = [];
         if (selector) {
-            const elems = document.querySelectorAll(selector);
-            elems.forEach(elem => elements.push(elem));
+            const queryResults = document.querySelectorAll(selector);
+            queryResults.forEach(elem => elements.push(elem));
         }
         if (xpath) {
-            const xpath = document.evaluate(xpath, document, null, XPathResult.ANY_TYPE, null );
-            let element = xpath.iterateNext();
+            const xpathResults = document.evaluate(xpath, document, null, XPathResult.ANY_TYPE, null);
+            let element = xpathResults.iterateNext();
             while(element) {
                 elements.push(element);
-                element = xpath.iterateNext();
+                element = xpathResults.iterateNext();
             }
         }
         return elements;

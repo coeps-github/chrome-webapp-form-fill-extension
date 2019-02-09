@@ -47,20 +47,12 @@ window.com.coeps.waff['popup'] = window.com.coeps.waff['popup'] || function() {
     };
 
     selector.oninput = () => {
-        if (selector.value) {
-            setNotRequired(xpath);
-        } else {
-            setRequired(xpath);
-        }
+        setSelectorAndXpathFieldRequired();
         saveInputState(() => chrome.runtime.sendMessage({markElements: {}}));
     };
 
     xpath.oninput = () => {
-        if (xpath.value) {
-            setNotRequired(selector);
-        } else {
-            setRequired(selector);
-        }
+        setSelectorAndXpathFieldRequired();
         saveInputState(() => chrome.runtime.sendMessage({markElements: {}}));
     };
 
@@ -89,7 +81,7 @@ window.com.coeps.waff['popup'] = window.com.coeps.waff['popup'] || function() {
             chrome.runtime.sendMessage({fillElement: {}}, () => {
                 test.innerHTML = '&#10004;';
                 setTimeout(() => {
-                    test.innerText = 'fill';
+                    test.innerText = 'test';
                     test.disabled = false;
                 }, 500);
             });
@@ -139,6 +131,7 @@ window.com.coeps.waff['popup'] = window.com.coeps.waff['popup'] || function() {
             index.value = request.updatePopup.value.index;
             page.checked = true;
             disableValueAndPropertyField(click.checked);
+            setSelectorAndXpathFieldRequired();
             sendResponse();
         }
         return true;
@@ -184,6 +177,7 @@ window.com.coeps.waff['popup'] = window.com.coeps.waff['popup'] || function() {
             index.value = config.popup.index;
             page.checked = config.popup.page;
             disableValueAndPropertyField(click.checked);
+            setSelectorAndXpathFieldRequired();
         }
     }
 
@@ -211,20 +205,17 @@ window.com.coeps.waff['popup'] = window.com.coeps.waff['popup'] || function() {
         }
     }
 
+    function setSelectorAndXpathFieldRequired() {
+        selector.required = !xpath.value;
+        xpath.required = !selector.value;
+    }
+
     function colorizeSelectButton(selectEnabled) {
         if (selectEnabled) {
             select.style.backgroundColor = 'lightgreen';
         } else {
             select.style.backgroundColor = null;
         }
-    }
-
-    function setRequired(element) {
-        element.required = true;
-    }
-
-    function setNotRequired(element) {
-        element.required = false;
     }
 
     return {
