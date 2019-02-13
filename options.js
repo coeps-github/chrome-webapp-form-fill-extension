@@ -41,7 +41,7 @@ window.com.coeps.waff['options'] = window.com.coeps.waff['options'] || function 
             return;
         }
         add.disabled = true;
-        config.innerHTML = config.innerHTML + createConfigEntry({
+        config.innerHTML = createConfigEntry({
             preset: addPreset.value,
             value: addValue.value,
             property: addProperty.value,
@@ -50,7 +50,7 @@ window.com.coeps.waff['options'] = window.com.coeps.waff['options'] || function 
             xpath: addXpath.value,
             index: addIndex.value,
             url: addUrl.value
-        }, currentIndex);
+        }, currentIndex) + config.innerHTML;
         currentIndex++;
         initializeAddFields();
         connectActionListeners();
