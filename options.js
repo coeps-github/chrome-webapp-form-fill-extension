@@ -1,7 +1,7 @@
 window['com'] = window['com'] || {};
 window.com['coeps'] = window.com['coeps'] || {};
 window.com.coeps['waff'] = window.com.coeps['waff'] || {};
-window.com.coeps.waff['options'] = window.com.coeps.waff['options'] || function() {
+window.com.coeps.waff['options'] = window.com.coeps.waff['options'] || function () {
 
     const form = document.getElementById('form');
     const config = document.getElementById('config');
@@ -52,6 +52,7 @@ window.com.coeps.waff['options'] = window.com.coeps.waff['options'] || function(
             url: addUrl.value
         }, currentIndex);
         currentIndex++;
+        initializeAddFields();
         connectActionListeners();
         add.innerHTML = '&#10004;';
         setTimeout(() => {
@@ -111,6 +112,7 @@ window.com.coeps.waff['options'] = window.com.coeps.waff['options'] || function(
 
     reset.onclick = () => {
         reset.disabled = true;
+        initializeAddFields();
         createConfigEntries();
         reset.innerHTML = '&#10004;';
         setTimeout(() => {
@@ -148,6 +150,7 @@ window.com.coeps.waff['options'] = window.com.coeps.waff['options'] || function(
                         value: rules
                     }
                 }, () => {
+                    initializeAddFields();
                     createConfigEntries();
                     importResult.innerHTML = '&#10004;';
                 });
@@ -164,13 +167,32 @@ window.com.coeps.waff['options'] = window.com.coeps.waff['options'] || function(
 
     chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         if (request.updateOptions) {
+            initializeAddFields();
             createConfigEntries();
             sendResponse();
         }
         return true;
     });
 
+    initializeAddFields();
     createConfigEntries();
+
+    function initializeAddFields() {
+        resetAddFields();
+        disableAddValueAndPropertyField(addValue, addProperty, addClick.checked);
+        setSelectorAndXpathFieldRequired(addSelector, addXpath);
+    }
+
+    function resetAddFields() {
+        addPreset.value = '';
+        addValue.value = '';
+        addProperty.value = '';
+        addClick.checked = false;
+        addSelector.value = '';
+        addXpath.value = '';
+        addIndex.value = '';
+        addUrl.value = '';
+    }
 
     function createConfigEntries() {
         chrome.runtime.sendMessage({getRules: {}}, rules => {
