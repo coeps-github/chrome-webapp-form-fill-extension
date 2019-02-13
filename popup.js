@@ -6,6 +6,7 @@ window.com.coeps.waff['popup'] = window.com.coeps.waff['popup'] || function() {
     const form = document.getElementById('form');
     const preset = document.getElementById('preset');
     const fill = document.getElementById('fill');
+    const auto = document.getElementById('auto');
     const value = document.getElementById('value');
     const property = document.getElementById('property');
     const click = document.getElementById('click');
@@ -27,6 +28,10 @@ window.com.coeps.waff['popup'] = window.com.coeps.waff['popup'] || function() {
                 fill.disabled = false;
             }, 500);
         });
+    };
+
+    auto.onchange = () => {
+        saveInputState();
     };
 
     preset.onchange = () => {
@@ -146,6 +151,7 @@ window.com.coeps.waff['popup'] = window.com.coeps.waff['popup'] || function() {
             setPopup: {
                 value: {
                     preset: preset.value,
+                    auto: auto.checked,
                     value: value.value,
                     property: property.value,
                     click: click.checked,
@@ -170,6 +176,7 @@ window.com.coeps.waff['popup'] = window.com.coeps.waff['popup'] || function() {
         }
         if (config.popup) {
             preset.value = addedPresets[config.popup.preset] ? config.popup.preset : '';
+            auto.checked = config.popup.auto;
             value.value = config.popup.value;
             property.value = config.popup.property;
             click.checked = config.popup.click;

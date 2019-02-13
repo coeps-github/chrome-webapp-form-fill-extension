@@ -4,6 +4,7 @@ window.com.coeps['waff'] = window.com.coeps['waff'] || {};
 window.com.coeps.waff['content'] = window.com.coeps.waff['content'] || function () {
 
     let previousElement = null;
+    let previousUrl = null;
 
     document.onclick = event => {
         chrome.runtime.sendMessage({disableSelectEnabled: {}}, disabled => {
@@ -15,7 +16,7 @@ window.com.coeps.waff['content'] = window.com.coeps.waff['content'] || function 
     };
 
     document.onmouseover = event => {
-        if (alreadyHanlded(event.target)) {
+        if (alreadyHanldedElement(event.target)) {
             return;
         }
         chrome.runtime.sendMessage({getSelectEnabled: {}}, selectEnabled => {
@@ -24,6 +25,9 @@ window.com.coeps.waff['content'] = window.com.coeps.waff['content'] || function 
                 highlightedElement(event.target);
             }
         });
+        if (!alreadyHanldedUrl(window.location.href)) {
+            autoFill();
+        }
     };
 
     chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
@@ -47,6 +51,7 @@ window.com.coeps.waff['content'] = window.com.coeps.waff['content'] || function 
     });
 
     addStyles();
+    autoFill();
 
     function addStyles() {
         const css = '.mark { box-shadow: 0 0 5px 0 rgba(255,0,0,1); }';
@@ -56,11 +61,29 @@ window.com.coeps.waff['content'] = window.com.coeps.waff['content'] || function 
         document.head.appendChild(style);
     }
 
-    function alreadyHanlded(element) {
+    function autoFill() {
+        chrome.runtime.sendMessage({getAutoFill: {}}, autoFill => {
+            if (autoFill.enabled) {
+                autoFill.rules.forEach(rule => {
+                    fillElements(rule.value, rule.property, rule.selector, rule.xpath, rule.index);
+                });
+            }
+        });
+    }
+
+    function alreadyHanldedElement(element) {
         if (element === previousElement) {
             return true;
         }
-        previousElement = event.target;
+        previousElement = element;
+        return false;
+    }
+
+    function alreadyHanldedUrl(url) {
+        if (url === previousUrl) {
+            return true;
+        }
+        previousUrl = url;
         return false;
     }
 
@@ -187,7 +210,7 @@ window.com.coeps.waff['content'] = window.com.coeps.waff['content'] || function 
         if (xpath) {
             const xpathResults = document.evaluate(xpath, document, null, XPathResult.ANY_TYPE, null);
             let element = xpathResults.iterateNext();
-            while(element) {
+            while (element) {
                 elements.push(element);
                 element = xpathResults.iterateNext();
             }

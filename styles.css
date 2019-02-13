@@ -21,6 +21,11 @@
     display: inline-flex;
 }
 
+.flex--left {
+    justify-content: left;
+    align-items: center;
+}
+
 .flex--center {
     justify-content: center;
     align-items: center;

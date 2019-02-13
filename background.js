@@ -5,6 +5,12 @@ window.com.coeps.waff['background'] = window.com.coeps.waff['background'] || fun
 
     let debug = false;
 
+    chrome.tabs.onUpdated.addListener(function(id) {
+        chrome.tabs.executeScript(id, {
+            file: 'content.js'
+        });
+    });
+
     chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         if (request.injectContentScript) {
             currentTab(id => chrome.tabs.executeScript(id, {
@@ -56,6 +62,17 @@ window.com.coeps.waff['background'] = window.com.coeps.waff['background'] || fun
                         popup: request.setPopup.value
                     }
                 }, () => sendResponse());
+            });
+        }
+        if (request.getAutoFill) {
+            getUrl(url => {
+                chrome.storage.sync.get('config', data => {
+                    const rules = (data.config && data.config.rules) || [];
+                    sendResponse({
+                        enabled: !!(data.config && data.config.popup && data.config.popup.auto),
+                        rules: rules.filter(rule => rule.url === url)
+                    });
+                });
             });
         }
         if (request.getRules) {
