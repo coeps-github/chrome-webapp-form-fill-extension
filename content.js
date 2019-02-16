@@ -4,6 +4,7 @@ window.com.coeps['waff'] = window.com.coeps['waff'] || {};
 window.com.coeps.waff['content'] = window.com.coeps.waff['content'] || function () {
 
     let previousElement = null;
+    let previousUrl = null;
 
     document.onclick = event => {
         chrome.runtime.sendMessage({disableSelectEnabled: {}}, disabled => {
@@ -15,7 +16,7 @@ window.com.coeps.waff['content'] = window.com.coeps.waff['content'] || function 
     };
 
     document.onmouseover = event => {
-        if (alreadyHanlded(event.target)) {
+        if (alreadyHanldedElement(event.target)) {
             return;
         }
         chrome.runtime.sendMessage({getSelectEnabled: {}}, selectEnabled => {
@@ -24,22 +25,25 @@ window.com.coeps.waff['content'] = window.com.coeps.waff['content'] || function 
                 highlightedElement(event.target);
             }
         });
+        if (!alreadyHanldedUrl(window.location.href)) {
+            chrome.runtime.sendMessage({triggerAutoFill: {}});
+        }
     };
 
     chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         if (request.markElementsContent) {
-            markElements(request.markElementsContent.value.selector, request.markElementsContent.value.index);
+            markElements(request.markElementsContent.value.selector, request.markElementsContent.value.xpath, request.markElementsContent.value.index);
             sendResponse();
         }
         if (request.clickElementsContent) {
             request.clickElementsContent.value.rules.forEach(rule => {
-                clickElements(rule.selector, rule.index);
+                clickElements(rule.selector, rule.xpath, rule.index);
                 sendResponse();
             });
         }
         if (request.fillElementsContent) {
             request.fillElementsContent.value.rules.forEach(rule => {
-                fillElements(rule.value, rule.property, rule.selector, rule.index);
+                fillElements(rule.value, rule.property, rule.selector, rule.xpath, rule.index);
                 sendResponse();
             });
         }
@@ -56,11 +60,19 @@ window.com.coeps.waff['content'] = window.com.coeps.waff['content'] || function 
         document.head.appendChild(style);
     }
 
-    function alreadyHanlded(element) {
+    function alreadyHanldedElement(element) {
         if (element === previousElement) {
             return true;
         }
-        previousElement = event.target;
+        previousElement = element;
+        return false;
+    }
+
+    function alreadyHanldedUrl(url) {
+        if (url === previousUrl) {
+            return true;
+        }
+        previousUrl = url;
         return false;
     }
 
@@ -70,11 +82,11 @@ window.com.coeps.waff['content'] = window.com.coeps.waff['content'] || function 
         element.classList.add('mark');
     }
 
-    function markElements(selector, index) {
+    function markElements(selector, xpath, index) {
         const markedElements = document.querySelectorAll('.mark');
         markedElements.forEach(element => element.classList.remove('mark'));
-        if (selector) {
-            const elements = document.querySelectorAll(selector);
+        if (selector || xpath) {
+            const elements = getElements(selector, xpath);
             elements.forEach((element, i) => {
                 const indexNum = parseInt(index);
                 if (isNaN(indexNum)) {
@@ -88,9 +100,9 @@ window.com.coeps.waff['content'] = window.com.coeps.waff['content'] || function 
         }
     }
 
-    function fillElements(value, property, selector, index) {
-        if (property && selector) {
-            const elements = document.querySelectorAll(selector);
+    function fillElements(value, property, selector, xpath, index) {
+        if (property && (selector || xpath)) {
+            const elements = getElements(selector, xpath);
             elements.forEach((element, i) => {
                 const indexNum = parseInt(index);
                 if (isNaN(indexNum)) {
@@ -105,14 +117,14 @@ window.com.coeps.waff['content'] = window.com.coeps.waff['content'] || function 
         }
     }
 
-    function clickElements(selector, index) {
-        if (selector) {
+    function clickElements(selector, xpath, index) {
+        if (selector || xpath) {
             const event = new MouseEvent('click', {
                 view: window,
                 bubbles: true,
                 cancelable: true
             });
-            const elements = document.querySelectorAll(selector);
+            const elements = getElements(selector, xpath);
             elements.forEach((element, i) => {
                 const indexNum = parseInt(index);
                 if (isNaN(indexNum)) {
@@ -130,12 +142,14 @@ window.com.coeps.waff['content'] = window.com.coeps.waff['content'] || function 
         const tag = element.tagName.toLowerCase();
         const type = (element.type || '').toLowerCase();
         const attrs = attributes(element);
+        const text = element.innerText;
         chrome.runtime.sendMessage({
             highlightedElement: {
                 value: {
                     tag: tag,
                     type: type,
-                    attributes: attrs
+                    attributes: attrs,
+                    text: text
                 }
             }
         }, queries => {
@@ -158,7 +172,7 @@ window.com.coeps.waff['content'] = window.com.coeps.waff['content'] || function 
     function getQueryRatings(element, queries) {
         const ratings = [];
         queries.queries.some(query => {
-            const elements = document.querySelectorAll(query.selector);
+            const elements = getElements(query.selector, query.xpath);
             const rating = elements.length;
             let index = 0;
             elements.forEach((elem, i) => {
@@ -174,6 +188,23 @@ window.com.coeps.waff['content'] = window.com.coeps.waff['content'] || function 
             return rating === queries.targetRating;
         });
         return ratings;
+    }
+
+    function getElements(selector, xpath) {
+        const elements = [];
+        if (selector) {
+            const queryResults = document.querySelectorAll(selector);
+            queryResults.forEach(elem => elements.push(elem));
+        }
+        if (xpath) {
+            const xpathResults = document.evaluate(xpath, document, null, XPathResult.ANY_TYPE, null);
+            let element = xpathResults.iterateNext();
+            while (element) {
+                elements.push(element);
+                element = xpathResults.iterateNext();
+            }
+        }
+        return elements;
     }
 
     return {};

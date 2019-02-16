@@ -6,10 +6,14 @@ window.com.coeps.waff['popup'] = window.com.coeps.waff['popup'] || function() {
     const form = document.getElementById('form');
     const preset = document.getElementById('preset');
     const fill = document.getElementById('fill');
+    const auto = document.getElementById('auto');
+    const autoInfo = document.getElementById('auto-info');
+    const autoInfoPopup = document.getElementById('auto-info-popup');
     const value = document.getElementById('value');
     const property = document.getElementById('property');
     const click = document.getElementById('click');
     const selector = document.getElementById('selector');
+    const xpath = document.getElementById('xpath');
     const index = document.getElementById('index');
     const page = document.getElementById('page');
     const select = document.getElementById('select');
@@ -26,6 +30,25 @@ window.com.coeps.waff['popup'] = window.com.coeps.waff['popup'] || function() {
                 fill.disabled = false;
             }, 500);
         });
+    };
+
+    auto.onchange = () => {
+        saveInputState(() => chrome.runtime.sendMessage({triggerAutoFill: {}}));
+    };
+
+    autoInfo.onclick = () => {
+        const infoVisible = 'info--visible';
+        if (autoInfo.classList.contains(infoVisible)) {
+            autoInfo.classList.remove(infoVisible);
+        } else {
+            autoInfo.classList.add(infoVisible);
+        }
+        const popupVisible = 'popup--visible';
+        if (autoInfoPopup.classList.contains(popupVisible)) {
+            autoInfoPopup.classList.remove(popupVisible);
+        } else {
+            autoInfoPopup.classList.add(popupVisible);
+        }
     };
 
     preset.onchange = () => {
@@ -46,6 +69,12 @@ window.com.coeps.waff['popup'] = window.com.coeps.waff['popup'] || function() {
     };
 
     selector.oninput = () => {
+        setSelectorAndXpathFieldRequired();
+        saveInputState(() => chrome.runtime.sendMessage({markElements: {}}));
+    };
+
+    xpath.oninput = () => {
+        setSelectorAndXpathFieldRequired();
         saveInputState(() => chrome.runtime.sendMessage({markElements: {}}));
     };
 
@@ -69,13 +98,13 @@ window.com.coeps.waff['popup'] = window.com.coeps.waff['popup'] || function() {
     };
 
     test.onclick = () => {
-        fill.disabled = true;
+        test.disabled = true;
         chrome.runtime.sendMessage({markElements: {}}, () => {
             chrome.runtime.sendMessage({fillElement: {}}, () => {
-                fill.innerHTML = '&#10004;';
+                test.innerHTML = '&#10004;';
                 setTimeout(() => {
-                    fill.innerText = 'fill';
-                    fill.disabled = false;
+                    test.innerText = 'test';
+                    test.disabled = false;
                 }, 500);
             });
         });
@@ -94,6 +123,7 @@ window.com.coeps.waff['popup'] = window.com.coeps.waff['popup'] || function() {
                         property: property.value,
                         click: click.checked,
                         selector: selector.value,
+                        xpath: xpath.value,
                         index: index.value,
                         page: page.checked
                     }
@@ -119,9 +149,11 @@ window.com.coeps.waff['popup'] = window.com.coeps.waff['popup'] || function() {
             property.value = request.updatePopup.value.property;
             click.checked = request.updatePopup.value.click;
             selector.value = request.updatePopup.value.selector;
+            xpath.value = request.updatePopup.value.xpath;
             index.value = request.updatePopup.value.index;
             page.checked = true;
             disableValueAndPropertyField(click.checked);
+            setSelectorAndXpathFieldRequired();
             sendResponse();
         }
         return true;
@@ -129,16 +161,19 @@ window.com.coeps.waff['popup'] = window.com.coeps.waff['popup'] || function() {
 
     chrome.runtime.sendMessage({injectContentScript: {}});
     chrome.runtime.sendMessage({getConfig: {}}, config => updateUI(config));
+    chrome.runtime.sendMessage({markElements: {}});
 
     function saveInputState(callback) {
         chrome.runtime.sendMessage({
             setPopup: {
                 value: {
                     preset: preset.value,
+                    auto: auto.checked,
                     value: value.value,
                     property: property.value,
                     click: click.checked,
                     selector: selector.value,
+                    xpath: xpath.value,
                     index: index.value,
                     page: page.checked
                 }
@@ -158,13 +193,16 @@ window.com.coeps.waff['popup'] = window.com.coeps.waff['popup'] || function() {
         }
         if (config.popup) {
             preset.value = addedPresets[config.popup.preset] ? config.popup.preset : '';
+            auto.checked = config.popup.auto;
             value.value = config.popup.value;
             property.value = config.popup.property;
             click.checked = config.popup.click;
             selector.value = config.popup.selector;
+            xpath.value = config.popup.xpath;
             index.value = config.popup.index;
             page.checked = config.popup.page;
             disableValueAndPropertyField(click.checked);
+            setSelectorAndXpathFieldRequired();
         }
     }
 
@@ -190,6 +228,11 @@ window.com.coeps.waff['popup'] = window.com.coeps.waff['popup'] || function() {
             value.disabled = false;
             property.disabled = false;
         }
+    }
+
+    function setSelectorAndXpathFieldRequired() {
+        selector.required = !xpath.value;
+        xpath.required = !selector.value;
     }
 
     function colorizeSelectButton(selectEnabled) {
