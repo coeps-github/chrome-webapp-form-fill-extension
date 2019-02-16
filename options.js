@@ -55,6 +55,7 @@ window.com.coeps.waff['options'] = window.com.coeps.waff['options'] || function 
         initializeAddFields();
         connectActionListeners();
         add.innerHTML = '&#10004;';
+        colorizeSaveAndResetButton(true);
         setTimeout(() => {
             add.innerText = 'add';
             add.disabled = false;
@@ -93,6 +94,7 @@ window.com.coeps.waff['options'] = window.com.coeps.waff['options'] || function 
         }
         chrome.runtime.sendMessage(data, () => {
             save.innerHTML = '&#10004;';
+            colorizeSaveAndResetButton(false);
             setTimeout(() => {
                 save.innerText = 'save';
                 save.disabled = false;
@@ -104,6 +106,7 @@ window.com.coeps.waff['options'] = window.com.coeps.waff['options'] || function 
         clear.disabled = true;
         config.innerHTML = null;
         clear.innerHTML = '&#10004;';
+        colorizeSaveAndResetButton(true);
         setTimeout(() => {
             clear.innerText = 'clear';
             clear.disabled = false;
@@ -115,6 +118,7 @@ window.com.coeps.waff['options'] = window.com.coeps.waff['options'] || function 
         initializeAddFields();
         createConfigEntries();
         reset.innerHTML = '&#10004;';
+        colorizeSaveAndResetButton(false);
         setTimeout(() => {
             reset.innerText = 'reset';
             reset.disabled = false;
@@ -153,6 +157,7 @@ window.com.coeps.waff['options'] = window.com.coeps.waff['options'] || function 
                     initializeAddFields();
                     createConfigEntries();
                     importResult.innerHTML = '&#10004;';
+                    colorizeSaveAndResetButton(false);
                 });
             } catch {
                 errorHandler();
@@ -206,6 +211,24 @@ window.com.coeps.waff['options'] = window.com.coeps.waff['options'] || function 
     }
 
     function connectActionListeners() {
+        document.querySelectorAll('[id^=preset]')
+            .forEach(preset =>
+                preset.oninput = () => {
+                    colorizeSaveAndResetButton(true);
+                }
+            );
+        document.querySelectorAll('[id^=value]')
+            .forEach(value =>
+                value.oninput = () => {
+                    colorizeSaveAndResetButton(true);
+                }
+            );
+        document.querySelectorAll('[id^=property]')
+            .forEach(property =>
+                property.oninput = () => {
+                    colorizeSaveAndResetButton(true);
+                }
+            );
         document.querySelectorAll('[id^=click]')
             .forEach(click =>
                 click.onchange = () => {
@@ -213,12 +236,15 @@ window.com.coeps.waff['options'] = window.com.coeps.waff['options'] || function 
                     const value = document.getElementById('value' + id);
                     const property = document.getElementById('property' + id);
                     disableAddValueAndPropertyField(value, property, click.checked);
+                    colorizeSaveAndResetButton(true);
                 }
             );
         document.querySelectorAll('[id^=delete]')
             .forEach(del =>
-                del.onclick = () =>
-                    config.removeChild(document.getElementById(del.parentElement.parentElement.id))
+                del.onclick = () => {
+                    config.removeChild(document.getElementById(del.parentElement.parentElement.id));
+                    colorizeSaveAndResetButton(true);
+                }
             );
         document.querySelectorAll('[id^=up]')
             .forEach(up =>
@@ -226,6 +252,7 @@ window.com.coeps.waff['options'] = window.com.coeps.waff['options'] || function 
                     const me = document.getElementById(up.parentElement.parentElement.parentElement.id);
                     const myIndex = getElementIndex(me);
                     moveChildToIndex(config, me, myIndex - 1);
+                    colorizeSaveAndResetButton(true);
                 }
             );
         document.querySelectorAll('[id^=down]')
@@ -234,6 +261,7 @@ window.com.coeps.waff['options'] = window.com.coeps.waff['options'] || function 
                     const me = document.getElementById(down.parentElement.parentElement.parentElement.id);
                     const myIndex = getElementIndex(me);
                     moveChildToIndex(config, me, myIndex + 1);
+                    colorizeSaveAndResetButton(true);
                 }
             );
         document.querySelectorAll('[id^=selector]')
@@ -242,6 +270,7 @@ window.com.coeps.waff['options'] = window.com.coeps.waff['options'] || function 
                     const id = selector.id.replace('selector', '');
                     const xpath = document.getElementById('xpath' + id);
                     setSelectorAndXpathFieldRequired(selector, xpath);
+                    colorizeSaveAndResetButton(true);
                 }
             );
         document.querySelectorAll('[id^=xpath]')
@@ -250,6 +279,19 @@ window.com.coeps.waff['options'] = window.com.coeps.waff['options'] || function 
                     const id = xpath.id.replace('xpath', '');
                     const selector = document.getElementById('selector' + id);
                     setSelectorAndXpathFieldRequired(selector, xpath);
+                    colorizeSaveAndResetButton(true);
+                }
+            );
+        document.querySelectorAll('[id^=index]')
+            .forEach(index =>
+                index.oninput = () => {
+                    colorizeSaveAndResetButton(true);
+                }
+            );
+        document.querySelectorAll('[id^=url]')
+            .forEach(url =>
+                url.oninput = () => {
+                    colorizeSaveAndResetButton(true);
                 }
             );
     }
@@ -316,6 +358,16 @@ window.com.coeps.waff['options'] = window.com.coeps.waff['options'] || function 
             index = 0;
         }
         parent.insertBefore(child, parent.children[index]);
+    }
+
+    function colorizeSaveAndResetButton(changesPending) {
+        if (changesPending) {
+            save.style.backgroundColor = 'lightgreen';
+            reset.style.backgroundColor = 'lightgreen';
+        } else {
+            save.style.backgroundColor = null;
+            reset.style.backgroundColor = null;
+        }
     }
 
 }();

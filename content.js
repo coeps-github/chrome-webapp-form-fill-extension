@@ -26,7 +26,7 @@ window.com.coeps.waff['content'] = window.com.coeps.waff['content'] || function 
             }
         });
         if (!alreadyHanldedUrl(window.location.href)) {
-            autoFill();
+            chrome.runtime.sendMessage({triggerAutoFill: {}});
         }
     };
 
@@ -51,7 +51,6 @@ window.com.coeps.waff['content'] = window.com.coeps.waff['content'] || function 
     });
 
     addStyles();
-    autoFill();
 
     function addStyles() {
         const css = '.mark { box-shadow: 0 0 5px 0 rgba(255,0,0,1); }';
@@ -59,16 +58,6 @@ window.com.coeps.waff['content'] = window.com.coeps.waff['content'] || function 
         style.type = 'text/css';
         style.appendChild(document.createTextNode(css));
         document.head.appendChild(style);
-    }
-
-    function autoFill() {
-        chrome.runtime.sendMessage({getAutoFill: {}}, autoFill => {
-            if (autoFill.enabled) {
-                autoFill.rules.forEach(rule => {
-                    fillElements(rule.value, rule.property, rule.selector, rule.xpath, rule.index);
-                });
-            }
-        });
     }
 
     function alreadyHanldedElement(element) {

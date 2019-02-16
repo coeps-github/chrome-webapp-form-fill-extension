@@ -5,220 +5,56 @@ window.com.coeps.waff['background'] = window.com.coeps.waff['background'] || fun
 
     let debug = false;
 
-    chrome.tabs.onUpdated.addListener(function(id) {
-        chrome.tabs.executeScript(id, {
-            file: 'content.js'
-        });
+    chrome.tabs.onUpdated.addListener(() => {
+        injectContentScript();
+        triggerAutoFill();
     });
 
     chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         if (request.injectContentScript) {
-            currentTab(id => chrome.tabs.executeScript(id, {
-                file: 'content.js'
-            }));
-            sendResponse();
+            injectContentScript(sendResponse);
+        }
+        if (request.triggerAutoFill) {
+            triggerAutoFill(sendResponse);
         }
         if (request.getConfig) {
-            chrome.storage.sync.get('config', data => {
-                sendResponse(data.config || {});
-            });
+            getConfig(sendResponse);
         }
         if (request.getSelectEnabled) {
-            chrome.storage.sync.get('config', data => {
-                sendResponse(!!(data.config && data.config.selectEnabled));
-            });
+            getSelectEnabled(sendResponse);
         }
         if (request.disableSelectEnabled) {
-            chrome.storage.sync.get('config', data => {
-                const selectEnabled = !!(data.config && data.config.selectEnabled);
-                if (selectEnabled) {
-                    chrome.storage.sync.set({
-                        config: {
-                            ...data.config || {},
-                            selectEnabled: false
-                        }
-                    }, () => sendResponse(true));
-                } else {
-                    sendResponse(false);
-                }
-            });
+            disableSelectEnabled(sendResponse);
         }
         if (request.toggleSelectEnabled) {
-            chrome.storage.sync.get('config', data => {
-                const selectEnabled = !!(data.config && data.config.selectEnabled);
-                chrome.storage.sync.set({
-                    config: {
-                        ...data.config || {},
-                        selectEnabled: !selectEnabled
-                    }
-                }, () => sendResponse(!selectEnabled));
-            });
+            toggleSelectEnabled(sendResponse);
         }
         if (request.setPopup) {
-            chrome.storage.sync.get('config', data => {
-                chrome.storage.sync.set({
-                    config: {
-                        ...data.config || {},
-                        popup: request.setPopup.value
-                    }
-                }, () => sendResponse());
-            });
-        }
-        if (request.getAutoFill) {
-            getUrl(url => {
-                chrome.storage.sync.get('config', data => {
-                    const rules = (data.config && data.config.rules) || [];
-                    sendResponse({
-                        enabled: !!(data.config && data.config.popup && data.config.popup.auto),
-                        rules: rules.filter(rule => rule.url === url)
-                    });
-                });
-            });
+            setPopup(request.setPopup.value, sendResponse);
         }
         if (request.getRules) {
-            chrome.storage.sync.get('config', data => {
-                sendResponse((data.config && data.config.rules) || []);
-            });
+            getRules(sendResponse);
         }
         if (request.setRules) {
-            chrome.storage.sync.get('config', data => {
-                chrome.storage.sync.set({
-                    config: {
-                        ...data.config || {},
-                        rules: request.setRules.value
-                    }
-                }, () => sendResponse());
-            });
+            setRules(request.setRules.value, sendResponse);
         }
         if (request.addRule) {
-            getUrl(url => {
-                chrome.storage.sync.get('config', data => {
-                    chrome.storage.sync.set({
-                        config: {
-                            ...data.config || {},
-                            rules: [
-                                ...(data.config && data.config.rules) || [],
-                                {
-                                    preset: request.addRule.value.preset,
-                                    value: request.addRule.value.value,
-                                    property: request.addRule.value.property,
-                                    click: request.addRule.value.click,
-                                    selector: request.addRule.value.selector,
-                                    xpath: request.addRule.value.xpath,
-                                    index: request.addRule.value.index,
-                                    url: request.addRule.value.page ? url : ''
-                                }
-                            ]
-                        }
-                    }, () => sendResponse());
-                });
-            });
+            addRule(request.addRule.value, sendResponse);
         }
         if (request.markElements) {
-            chrome.storage.sync.get('config', data => {
-                currentTab(id => {
-                    return chrome.tabs.sendMessage(id, {
-                        markElementsContent: {
-                            value: {
-                                selector: (data.config && data.config.popup && data.config.popup.selector) || '',
-                                xpath: (data.config && data.config.popup && data.config.popup.xpath) || '',
-                                index: (data.config && data.config.popup && data.config.popup.index) || ''
-                            }
-                        }
-                    });
-                });
-                sendResponse();
-            });
+            markElements(sendResponse);
         }
         if (request.fillElement) {
-            chrome.storage.sync.get('config', data => {
-                currentTab(id => {
-                    const popup = data.config && data.config.popup || {};
-                    if (popup.click) {
-                        chrome.tabs.sendMessage(id, {
-                            clickElementsContent: {
-                                value: {
-                                    rules: [popup],
-                                }
-                            }
-                        });
-                    } else {
-                        chrome.tabs.sendMessage(id, {
-                            fillElementsContent: {
-                                value: {
-                                    rules: [popup],
-                                }
-                            }
-                        });
-                    }
-                });
-                sendResponse();
-            });
+            fillElement(sendResponse);
         }
         if (request.fillElements) {
-            chrome.storage.sync.get('config', data => {
-                currentTab((id, url) => {
-                    const popup = data.config && data.config.popup || {};
-                    const rules = data.config && data.config.rules || [];
-                    const clickRules = rules.filter(rule => rule.preset === popup.preset && (!rule.url || rule.url === url) && rule.click);
-                    const fillRules = rules.filter(rule => rule.preset === popup.preset && (!rule.url || rule.url === url) && !rule.click);
-                    if (clickRules.length > 0) {
-                        chrome.tabs.sendMessage(id, {
-                            clickElementsContent: {
-                                value: {
-                                    rules: clickRules,
-                                }
-                            }
-                        });
-                    }
-                    if (fillRules.length > 0) {
-                        chrome.tabs.sendMessage(id, {
-                            fillElementsContent: {
-                                value: {
-                                    rules: fillRules,
-                                }
-                            }
-                        });
-                    }
-                });
-                sendResponse();
-            });
+            fillElements(sendResponse);
         }
         if (request.highlightedElement) {
-            const queries = createQueries(request.highlightedElement.value);
-            sendResponse(queries);
+            sendResponse(createQueries(request.highlightedElement.value));
         }
         if (request.highlightedElementQueryRatings) {
-            const bestRating = chooseBestRating(request.highlightedElementQueryRatings.value);
-            const select = request.highlightedElementQueryRatings.select;
-            const send = popup => chrome.runtime.sendMessage({
-                updatePopup: {
-                    value: popup
-                }
-            }, () => sendResponse());
-            chrome.storage.sync.get('config', data => {
-                    const prevPopup = data.config && data.config.popup || {};
-                    const popup = {
-                        ...prevPopup,
-                        value: bestRating.value || prevPopup.value || '',
-                        property: bestRating.property || '',
-                        click: bestRating.click || '',
-                        selector: bestRating.selector || '',
-                        xpath: bestRating.xpath || '',
-                        index: bestRating.index || ''
-                    };
-                    if (select) {
-                        chrome.storage.sync.set({
-                            config: {
-                                ...data.config || {},
-                                popup: popup
-                            }
-                        }, () => send(popup));
-                    } else {
-                        send(popup);
-                    }
-                }
-            );
+            highlightedElementQueryRatings(request.highlightedElementQueryRatings.value, request.highlightedElementQueryRatings.select, sendResponse);
         }
         if (request.updatePopup) {
             sendResponse();
@@ -227,8 +63,7 @@ window.com.coeps.waff['background'] = window.com.coeps.waff['background'] || fun
             sendResponse();
         }
         if (request.openOptionsPage) {
-            chrome.runtime.openOptionsPage();
-            sendResponse();
+            openOptionsPage(sendResponse);
         }
         if (request.markElementsContent) {
             sendResponse();
@@ -244,10 +79,6 @@ window.com.coeps.waff['background'] = window.com.coeps.waff['background'] || fun
 
     chrome.management.getSelf(info => debug = info.installType === 'development');
 
-    function getUrl(callback) {
-        currentTab((id, url) => callback(url));
-    }
-
     function currentTab(action) {
         chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
             if (tabs.length > 0) {
@@ -256,6 +87,197 @@ window.com.coeps.waff['background'] = window.com.coeps.waff['background'] || fun
                 action(id, url);
             } else {
                 action(0, '');
+            }
+        });
+    }
+
+    function getUrl(callback) {
+        currentTab((id, url) => callback(url));
+    }
+
+    function injectContentScript(callback) {
+        currentTab(id => chrome.tabs.executeScript(id, {
+            file: 'content.js'
+        }));
+        if (callback) {
+            callback();
+        }
+    }
+
+    function triggerAutoFill(callback) {
+        chrome.storage.sync.get('config', data => {
+            if (!!(data.config && data.config.popup && data.config.popup.auto)) {
+                fillElements(callback);
+            } else {
+                if (callback) {
+                    callback();
+                }
+            }
+        });
+    }
+
+    function getConfig(callback) {
+        chrome.storage.sync.get('config', data => {
+            callback(data.config || {});
+        });
+    }
+
+    function getSelectEnabled(callback) {
+        chrome.storage.sync.get('config', data => {
+            callback(!!(data.config && data.config.selectEnabled));
+        });
+    }
+
+    function disableSelectEnabled(callback) {
+        chrome.storage.sync.get('config', data => {
+            const selectEnabled = !!(data.config && data.config.selectEnabled);
+            if (selectEnabled) {
+                chrome.storage.sync.set({
+                    config: {
+                        ...data.config || {},
+                        selectEnabled: false
+                    }
+                }, () => callback(true));
+            } else {
+                callback(false);
+            }
+        });
+    }
+
+    function toggleSelectEnabled(callback) {
+        chrome.storage.sync.get('config', data => {
+            const selectEnabled = !!(data.config && data.config.selectEnabled);
+            chrome.storage.sync.set({
+                config: {
+                    ...data.config || {},
+                    selectEnabled: !selectEnabled
+                }
+            }, () => callback(!selectEnabled));
+        });
+    }
+
+    function setPopup(value, callback) {
+        chrome.storage.sync.get('config', data => {
+            chrome.storage.sync.set({
+                config: {
+                    ...data.config || {},
+                    popup: value
+                }
+            }, callback);
+        });
+    }
+
+    function getRules(callback) {
+        chrome.storage.sync.get('config', data => {
+            callback((data.config && data.config.rules) || []);
+        });
+    }
+
+    function setRules(value, callback) {
+        chrome.storage.sync.get('config', data => {
+            chrome.storage.sync.set({
+                config: {
+                    ...data.config || {},
+                    rules: value
+                }
+            }, callback);
+        });
+    }
+
+    function addRule(value, callback) {
+        getUrl(url => {
+            chrome.storage.sync.get('config', data => {
+                chrome.storage.sync.set({
+                    config: {
+                        ...data.config || {},
+                        rules: [
+                            ...(data.config && data.config.rules) || [],
+                            {
+                                preset: value.preset,
+                                value: value.value,
+                                property: value.property,
+                                click: value.click,
+                                selector: value.selector,
+                                xpath: value.xpath,
+                                index: value.index,
+                                url: value.page ? url : ''
+                            }
+                        ]
+                    }
+                }, () => callback());
+            });
+        });
+    }
+
+    function markElements(callback) {
+        chrome.storage.sync.get('config', data => {
+            currentTab(id => {
+                chrome.tabs.sendMessage(id, {
+                    markElementsContent: {
+                        value: {
+                            selector: (data.config && data.config.popup && data.config.popup.selector) || '',
+                            xpath: (data.config && data.config.popup && data.config.popup.xpath) || '',
+                            index: (data.config && data.config.popup && data.config.popup.index) || ''
+                        }
+                    }
+                }, callback);
+            });
+        });
+    }
+
+    function fillElement(callback) {
+        chrome.storage.sync.get('config', data => {
+            currentTab(id => {
+                const popup = data.config && data.config.popup || {};
+                if (popup.click) {
+                    chrome.tabs.sendMessage(id, {
+                        clickElementsContent: {
+                            value: {
+                                rules: [popup],
+                            }
+                        }
+                    }, callback);
+                } else {
+                    chrome.tabs.sendMessage(id, {
+                        fillElementsContent: {
+                            value: {
+                                rules: [popup],
+                            }
+                        }
+                    }, callback);
+                }
+            });
+        });
+    }
+
+    function fillElements(callback) {
+        chrome.storage.sync.get('config', data => {
+            currentTab((id, url) => {
+                const popup = data.config && data.config.popup || {};
+                const rules = data.config && data.config.rules || [];
+                const clickRules = rules.filter(rule => rule.preset === popup.preset && (!rule.url || rule.url === url) && rule.click);
+                const fillRules = rules.filter(rule => rule.preset === popup.preset && (!rule.url || rule.url === url) && !rule.click);
+                if (clickRules.length > 0) {
+                    chrome.tabs.sendMessage(id, {
+                        clickElementsContent: {
+                            value: {
+                                rules: clickRules,
+                            }
+                        }
+                    });
+                }
+                if (fillRules.length > 0) {
+                    chrome.tabs.sendMessage(id, {
+                        fillElementsContent: {
+                            value: {
+                                rules: fillRules,
+                            }
+                        }
+                    });
+                }
+            });
+            if (callback) {
+                callback();
             }
         });
     }
@@ -331,6 +353,43 @@ window.com.coeps.waff['background'] = window.com.coeps.waff['background'] || fun
             selector: selector,
             xpath: xpath
         };
+    }
+
+    function highlightedElementQueryRatings(value, select, callback) {
+        const bestRating = chooseBestRating(value);
+        const send = popup => chrome.runtime.sendMessage({
+            updatePopup: {
+                value: popup
+            }
+        }, callback);
+        chrome.storage.sync.get('config', data => {
+                const prevPopup = data.config && data.config.popup || {};
+                const popup = {
+                    ...prevPopup,
+                    value: bestRating.value || prevPopup.value || '',
+                    property: bestRating.property || '',
+                    click: bestRating.click || '',
+                    selector: bestRating.selector || '',
+                    xpath: bestRating.xpath || '',
+                    index: bestRating.index || ''
+                };
+                if (select) {
+                    chrome.storage.sync.set({
+                        config: {
+                            ...data.config || {},
+                            popup: popup
+                        }
+                    }, () => send(popup));
+                } else {
+                    send(popup);
+                }
+            }
+        );
+    }
+
+    function openOptionsPage(callback) {
+        chrome.runtime.openOptionsPage();
+        callback();
     }
 
     function chooseBestRating(queryRatings) {

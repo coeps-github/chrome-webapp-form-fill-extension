@@ -21,11 +21,6 @@
     display: inline-flex;
 }
 
-.flex--left {
-    justify-content: left;
-    align-items: center;
-}
-
 .flex--center {
     justify-content: center;
     align-items: center;
@@ -193,6 +188,35 @@
 
 .select-item {
     background: #1e2833;
+}
+
+.info {
+    font-size: 22px;
+    cursor: pointer;
+}
+
+.info--visible {
+    color: lightgreen;
+}
+
+.popup {
+    display: none;
+    position: fixed;
+    top: 20%;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 20px;
+    width: 90%;
+    border-radius: 5px;
+    background-color: white;
+}
+
+.popup > p {
+    margin: 0;
+}
+
+.popup--visible {
+    display: block;
 }
 
 ::placeholder {

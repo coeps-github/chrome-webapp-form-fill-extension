@@ -7,6 +7,8 @@ window.com.coeps.waff['popup'] = window.com.coeps.waff['popup'] || function() {
     const preset = document.getElementById('preset');
     const fill = document.getElementById('fill');
     const auto = document.getElementById('auto');
+    const autoInfo = document.getElementById('auto-info');
+    const autoInfoPopup = document.getElementById('auto-info-popup');
     const value = document.getElementById('value');
     const property = document.getElementById('property');
     const click = document.getElementById('click');
@@ -31,7 +33,22 @@ window.com.coeps.waff['popup'] = window.com.coeps.waff['popup'] || function() {
     };
 
     auto.onchange = () => {
-        saveInputState();
+        saveInputState(() => chrome.runtime.sendMessage({triggerAutoFill: {}}));
+    };
+
+    autoInfo.onclick = () => {
+        const infoVisible = 'info--visible';
+        if (autoInfo.classList.contains(infoVisible)) {
+            autoInfo.classList.remove(infoVisible);
+        } else {
+            autoInfo.classList.add(infoVisible);
+        }
+        const popupVisible = 'popup--visible';
+        if (autoInfoPopup.classList.contains(popupVisible)) {
+            autoInfoPopup.classList.remove(popupVisible);
+        } else {
+            autoInfoPopup.classList.add(popupVisible);
+        }
     };
 
     preset.onchange = () => {
